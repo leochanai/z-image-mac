@@ -1,89 +1,349 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Z-IMAGE: CYBERPUNK BRUTALISM DESIGN SYSTEM
+   "Neon Rift in the Void" — 黑暗深渊中的霓虹裂隙
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
+  /* ─── COLOR TOKENS ─── */
+  --color-void: #000000;
+  --color-surface: #0a0a0a;
+  --color-elevated: #111111;
   
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-neon: #00ff9d;        /* Matrix Green - 创造之光 */
+  --color-neon-alt: #00a8ff;    /* Electric Blue - 次要交互 */
+  --color-danger: #ff003c;      /* Warning Red - 关键 CTA */
+  --color-text: #ffffff;
+  --color-text-dim: rgba(255, 255, 255, 0.5);
+  --color-text-muted: rgba(255, 255, 255, 0.25);
   
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-glow: glow 2s ease-in-out infinite alternate;
+  /* ─── FONTS ─── */
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
   
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+  /* ─── BRUTALIST BORDERS ─── */
+  --border-brutal: 2px solid var(--color-neon);
+  --border-subtle: 1px solid rgba(0, 255, 157, 0.2);
+  
+  /* ─── NEON GLOW SHADOWS ─── */
+  --glow-neon: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
+  --glow-neon-intense: 0 0 30px rgba(0, 255, 157, 0.6), 0 0 60px rgba(0, 255, 157, 0.3), 0 0 100px rgba(0, 255, 157, 0.15);
+  --glow-danger: 0 0 20px rgba(255, 0, 60, 0.5), 0 0 40px rgba(255, 0, 60, 0.25);
+  
+  /* ─── ANIMATIONS ─── */
+  --animate-pulse-neon: pulse-neon 2s ease-in-out infinite;
+  --animate-flicker: flicker 0.15s ease-in-out infinite;
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-scan: scan 8s linear infinite;
+  --animate-glitch: glitch 0.3s ease-in-out;
+  
+  @keyframes pulse-neon {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
+    }
+    50% { 
+      box-shadow: 0 0 30px rgba(0, 255, 157, 0.6), 0 0 60px rgba(0, 255, 157, 0.3);
+    }
   }
   
-  @keyframes glow {
-    from { box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary); }
-    to { box-shadow: 0 0 20px var(--accent), 0 0 30px var(--accent); }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
   }
-
-  --animate-gradient-x: gradient-x 15s ease infinite;
-
-  @keyframes gradient-x {
-    0%, 100% {
-      background-size: 200% 200%;
-      background-position: left center;
+  
+  @keyframes breathe {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 0.8;
     }
-    50% {
-      background-size: 200% 200%;
-      background-position: right center;
+    50% { 
+      transform: scale(1.02);
+      opacity: 1;
     }
+  }
+  
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  
+  @keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+  }
+  
+  @keyframes float-diagonal {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(10px, -10px) rotate(1deg); }
+    50% { transform: translate(0, -20px) rotate(0deg); }
+    75% { transform: translate(-10px, -10px) rotate(-1deg); }
   }
 }
 
 :root {
-  /* Premium Dark Theme Palette */
-  --background: #050505; /* Obsidian Black */
-  --foreground: #ededed;
-  
-  --primary: #3b82f6; /* Electric Blue */
-  --secondary: #8b5cf6; /* Neon Purple */
-  --accent: #f43f5e; /* Rose */
-  
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #00ff9d;
+  --secondary: #00a8ff;
+  --accent: #ff003c;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-mono), 'Courier New', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+/* Display font for headings */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.glass-hover:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
+/* ═══════════════════════════════════════════════════════════════════════════
+   BACKGROUND EFFECTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Scrollbar */
+/* Grid background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-position: center center;
+}
+
+/* Scanline effect */
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BRUTALIST COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Sharp-edged card */
+.brutal-card {
+  background: rgba(10, 10, 10, 0.9);
+  border: 2px solid rgba(0, 255, 157, 0.3);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.brutal-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), transparent 50%);
+  pointer-events: none;
+}
+
+.brutal-card:hover {
+  border-color: rgba(0, 255, 157, 0.6);
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+  transform: translate(-2px, -2px);
+}
+
+/* Neon border glow */
+.neon-border {
+  border: 2px solid var(--primary);
+  box-shadow: 
+    0 0 10px rgba(0, 255, 157, 0.3),
+    inset 0 0 10px rgba(0, 255, 157, 0.1);
+}
+
+/* Neon text */
+.neon-text {
+  color: var(--primary);
+  text-shadow: 
+    0 0 10px rgba(0, 255, 157, 0.8),
+    0 0 20px rgba(0, 255, 157, 0.5),
+    0 0 30px rgba(0, 255, 157, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INTERACTIVE ELEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Primary CTA Button */
+.btn-neon {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform: translateX(-101%);
+  transition: transform 0.3s ease;
+  z-index: -1;
+}
+
+.btn-neon:hover {
+  color: #000;
+  box-shadow: var(--glow-neon);
+}
+
+.btn-neon:hover::before {
+  transform: translateX(0);
+}
+
+/* Danger/Action Button */
+.btn-danger {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1rem 2rem;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  box-shadow: var(--glow-danger);
+  transform: scale(1.02);
+}
+
+/* Input fields */
+.input-brutal {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  color: #fff;
+  font-family: var(--font-mono), monospace;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input-brutal:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.input-brutal::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DECORATIVE ELEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Corner accents */
+.corner-accent {
+  position: relative;
+}
+
+.corner-accent::before,
+.corner-accent::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--primary);
+}
+
+.corner-accent::before {
+  top: -5px;
+  left: -5px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner-accent::after {
+  bottom: -5px;
+  right: -5px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Diagonal line decoration */
+.diagonal-lines {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 255, 157, 0.05) 10px,
+    rgba(0, 255, 157, 0.05) 11px
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--background);
-}
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #000;
 }
 
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 1px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00ff9d;
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::selection {
+  background: var(--primary);
+  color: #000;
+}

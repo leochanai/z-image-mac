@@ -1,115 +1,46 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, CircleHelp } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2 } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * 图片生成配置接口
- * Interface for image generation configuration
- */
 interface GenerationConfig {
-  /**
-   * 生成图片的文本提示词，支持中英文
-   * Text prompt for image generation, supports Chinese and English
-   */
   prompt: string;
-
-  /**
-   * 负面提示词，用于排除不希望出现的元素
-   * Negative prompt to exclude unwanted elements
-   */
   negative_prompt: string;
-
-  /**
-   * 图片宽度，默认 1024
-   * Image width, default 1024
-   */
   width: number;
-
-  /**
-   * 图片高度，默认 1024
-   * Image height, default 1024
-   */
   height: number;
-
-  /**
-   * 采样步数，默认 9
-   * Sampling steps, default 9
-   */
   steps: number;
-
-  /**
-   * CFG 引导强度，默认 0.0，Turbo 模型建议保持为 0
-   * CFG guidance scale, default 0.0, recommended 0 for Turbo models
-   */
   guidance: number;
-
-  /**
-   * 随机种子，默认 42
-   * Random seed, default 42
-   */
   seed: number;
 }
 
+// Simple tooltip without portal to avoid SSR issues
 const Tooltip = ({ content }: { content: string }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleMouseEnter = () => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setCoords({
-        top: rect.top - 8, // Just above the trigger
-        left: rect.left + rect.width / 2
-      });
-      setIsVisible(true);
-    }
-  };
 
   return (
-    <>
-      <div 
-        ref={triggerRef}
-        className="relative inline-flex items-center ml-1.5"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setIsVisible(false)}
-      >
-        <CircleHelp className="w-3.5 h-3.5 text-white/30 hover:text-white/80 transition-colors cursor-help" />
-      </div>
-      {mounted && isVisible && createPortal(
-        <AnimatePresence>
-          {isVisible && (
-            <motion.div
-              initial={{ opacity: 0, y: 5, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 5, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              style={{ 
-                top: coords.top, 
-                left: coords.left,
-                position: 'fixed',
-                zIndex: 9999,
-                pointerEvents: 'none'
-              }}
-              className="-translate-x-1/2 -translate-y-full px-3 py-2 bg-zinc-900/95 border border-white/10 rounded-lg text-xs text-white/90 whitespace-nowrap backdrop-blur-md shadow-xl"
-            >
-              {content}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900/95" />
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-    </>
+    <div 
+      className="relative inline-flex items-center ml-2"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      <Info className="w-3.5 h-3.5 text-primary/40 hover:text-primary transition-colors cursor-help" />
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black border border-primary/30 text-xs text-white/80 whitespace-nowrap font-mono z-50"
+          >
+            {content}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary/30" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
@@ -170,221 +101,358 @@ export function Generator() {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
+  const randomizeSeed = () => {
+    updateConfig("seed", Math.floor(Math.random() * 2147483647));
+  };
+
   return (
-    <section id="generator" className="min-h-screen flex flex-col items-center justify-center py-20 px-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+    <section id="generator" className="min-h-screen py-20 px-6 md:px-12 relative">
+      {/* Background */}
+      <div className="absolute inset-0 grid-bg opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
       
-      <div className="container max-w-4xl mx-auto relative z-10">
+      <div className="container max-w-7xl mx-auto relative z-10">
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.6 }}
+          className="mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Create Your <span className="text-primary">Masterpiece</span>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="h-[2px] w-12 bg-primary" />
+            <span className="font-mono text-xs tracking-widest text-primary">02 // GENERATE</span>
+          </div>
+          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-white">
+            IMAGE <span className="neon-text">SYNTHESIS</span>
           </h2>
-          <p className="text-white/60 text-lg">
-            Describe what you want to see, and watch the magic happen.
-          </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="glass p-6 rounded-2xl shadow-2xl shadow-primary/10 border border-white/10 flex flex-col gap-4"
-        >
-          {/* Main Prompt Input */}
-          <div className="flex items-center gap-2">
-            <div className="p-4 bg-white/5 rounded-xl">
-              <Sparkles className="w-6 h-6 text-primary" />
+        {/* Main Layout: Input Panel + Preview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left: Control Panel */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="space-y-6"
+          >
+            {/* Main Prompt Input */}
+            <div className={cn(
+              "relative border-2 transition-all duration-300",
+              isGenerating 
+                ? "border-primary animate-pulse-neon" 
+                : "border-primary/30 hover:border-primary/60"
+            )}>
+              {/* Corner decorations */}
+              <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
+              <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-primary" />
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-primary" />
+              
+              <div className="p-6 bg-black/80">
+                <div className="flex items-center gap-3 mb-4">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <span className="font-mono text-xs tracking-widest text-primary/60">PROMPT INPUT</span>
+                </div>
+                <textarea
+                  value={config.prompt}
+                  onChange={(e) => updateConfig("prompt", e.target.value)}
+                  placeholder="Describe your vision... (支持中英文)"
+                  className="w-full h-32 bg-transparent border-none outline-none text-white placeholder:text-white/20 font-mono text-sm leading-relaxed resize-none"
+                  onKeyDown={(e) => e.key === "Enter" && e.metaKey && handleGenerate()}
+                />
+                <div className="flex items-center justify-between pt-4 border-t border-primary/10">
+                  <span className="font-mono text-xs text-white/30">
+                    {config.prompt.length} chars • ⌘+Enter to generate
+                  </span>
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !config.prompt}
+                    className={cn(
+                      "font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
+                      isGenerating || !config.prompt
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-primary text-black hover:shadow-[0_0_30px_rgba(0,255,157,0.4)]"
+                    )}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        PROCESSING
+                      </>
+                    ) : (
+                      <>
+                        GENERATE
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-            <input
-              type="text"
-              value={config.prompt}
-              onChange={(e) => updateConfig("prompt", e.target.value)}
-              placeholder="A futuristic city with flying cars at sunset..."
-              className="flex-1 bg-transparent border-none outline-none text-lg text-white placeholder:text-white/30 px-4"
-              onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-            />
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || !config.prompt}
-              className={cn(
-                "px-8 py-4 rounded-xl font-bold text-white transition-all duration-300 flex items-center gap-2",
-                isGenerating || !config.prompt
-                  ? "bg-white/10 cursor-not-allowed"
-                  : "bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/25 hover:scale-105"
-              )}
-            >
-              {isGenerating ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  Generate <Send className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </div>
 
-          {/* Advanced Settings Toggle */}
-          <div className="border-t border-white/5 pt-4">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors mx-auto"
-            >
-              <Settings2 className="w-4 h-4" />
-              Advanced Settings
-              {showSettings ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
+            {/* Advanced Settings */}
+            <div className="border border-primary/20 bg-black/50">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-primary/5 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Settings2 className="w-4 h-4 text-primary/60" />
+                  <span className="font-mono text-xs tracking-widest text-white/60">ADVANCED PARAMETERS</span>
+                </div>
+                {showSettings ? (
+                  <ChevronUp className="w-4 h-4 text-primary/60" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-primary/60" />
+                )}
+              </button>
 
-            <AnimatePresence>
-              {showSettings && (
+              <AnimatePresence>
+                {showSettings && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-6 space-y-4 border-t border-primary/10">
+                      {/* Negative Prompt */}
+                      <div className="pt-4">
+                        <div className="flex items-center mb-2">
+                          <label className="font-mono text-xs tracking-widest text-white/40">NEGATIVE</label>
+                          <Tooltip content="排除不希望出现的元素" />
+                        </div>
+                        <input
+                          type="text"
+                          value={config.negative_prompt}
+                          onChange={(e) => updateConfig("negative_prompt", e.target.value)}
+                          placeholder="blurry, low quality, watermark..."
+                          className="input-brutal w-full text-sm"
+                        />
+                      </div>
+
+                      {/* Grid of parameters */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Width */}
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <label className="font-mono text-xs tracking-widest text-white/40">WIDTH</label>
+                            <Tooltip content="图片宽度 (16的倍数)" />
+                          </div>
+                          <input
+                            type="number"
+                            step={16}
+                            min={256}
+                            value={config.width}
+                            onChange={(e) => updateConfig("width", parseInt(e.target.value) || 1024)}
+                            onBlur={() => {
+                              let val = Math.max(256, config.width);
+                              val = Math.round(val / 16) * 16;
+                              updateConfig("width", val);
+                            }}
+                            className="input-brutal w-full text-sm"
+                          />
+                        </div>
+
+                        {/* Height */}
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <label className="font-mono text-xs tracking-widest text-white/40">HEIGHT</label>
+                            <Tooltip content="图片高度 (16的倍数)" />
+                          </div>
+                          <input
+                            type="number"
+                            step={16}
+                            min={256}
+                            value={config.height}
+                            onChange={(e) => updateConfig("height", parseInt(e.target.value) || 1024)}
+                            onBlur={() => {
+                              let val = Math.max(256, config.height);
+                              val = Math.round(val / 16) * 16;
+                              updateConfig("height", val);
+                            }}
+                            className="input-brutal w-full text-sm"
+                          />
+                        </div>
+
+                        {/* Steps */}
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <label className="font-mono text-xs tracking-widest text-white/40">STEPS</label>
+                            <Tooltip content="采样步数 (1-50)" />
+                          </div>
+                          <input
+                            type="number"
+                            min={1}
+                            max={50}
+                            value={config.steps}
+                            onChange={(e) => updateConfig("steps", parseInt(e.target.value) || 9)}
+                            className="input-brutal w-full text-sm"
+                          />
+                        </div>
+
+                        {/* Guidance */}
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <label className="font-mono text-xs tracking-widest text-white/40">CFG</label>
+                            <Tooltip content="引导强度 (Turbo建议0)" />
+                          </div>
+                          <input
+                            type="number"
+                            step={0.1}
+                            value={config.guidance}
+                            onChange={(e) => updateConfig("guidance", parseFloat(e.target.value) || 0)}
+                            className="input-brutal w-full text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Seed with randomize */}
+                      <div>
+                        <div className="flex items-center mb-2">
+                          <label className="font-mono text-xs tracking-widest text-white/40">SEED</label>
+                          <Tooltip content="随机种子 (固定种子可复现结果)" />
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            value={config.seed}
+                            onChange={(e) => updateConfig("seed", parseInt(e.target.value) || 42)}
+                            className="input-brutal flex-1 text-sm"
+                          />
+                          <button
+                            onClick={randomizeSeed}
+                            className="px-4 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-all"
+                            title="Randomize seed"
+                          >
+                            <RefreshCw className="w-4 h-4 text-primary/60" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Right: Preview Panel */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="relative"
+          >
+            <div className={cn(
+              "relative aspect-square border-2 bg-black/80 overflow-hidden transition-all duration-500",
+              isGenerating 
+                ? "border-primary animate-pulse-neon" 
+                : generatedImage 
+                  ? "border-primary/60" 
+                  : "border-primary/20"
+            )}>
+              {/* Corner decorations */}
+              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10" />
+              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-10" />
+              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-10" />
+              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 z-10" />
+              
+              {/* Scanlines overlay */}
+              <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
+              
+              {generatedImage ? (
                 <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative w-full h-full group"
                 >
-                  <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Negative Prompt */}
-                    <div className="md:col-span-2 space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Negative Prompt</label>
-                        <Tooltip content="负面提示词，用于排除不希望出现的元素" />
-                      </div>
-                      <input
-                        type="text"
-                        value={config.negative_prompt}
-                        onChange={(e) => updateConfig("negative_prompt", e.target.value)}
-                        placeholder="Blurry, low quality, ugly..."
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
-
-                    {/* Dimensions */}
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Width</label>
-                        <Tooltip content="图片宽度，必须是 16 的倍数，默认 1024" />
-                      </div>
-                      <input
-                        type="number"
-                        step={16}
-                        min={256}
-                        value={config.width}
-                        onChange={(e) => updateConfig("width", parseInt(e.target.value) || 0)}
-                        onBlur={() => {
-                          let val = config.width;
-                          if (val < 256) val = 256;
-                          val = Math.round(val / 16) * 16;
-                          updateConfig("width", val);
-                        }}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Height</label>
-                        <Tooltip content="图片高度，必须是 16 的倍数，默认 1024" />
-                      </div>
-                      <input
-                        type="number"
-                        step={16}
-                        min={256}
-                        value={config.height}
-                        onChange={(e) => updateConfig("height", parseInt(e.target.value) || 0)}
-                        onBlur={() => {
-                          let val = config.height;
-                          if (val < 256) val = 256;
-                          val = Math.round(val / 16) * 16;
-                          updateConfig("height", val);
-                        }}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
-
-                    {/* Steps & Guidance */}
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Steps (1-50)</label>
-                        <Tooltip content="采样步数，默认 9" />
-                      </div>
-                      <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={config.steps}
-                        onChange={(e) => updateConfig("steps", parseInt(e.target.value) || 9)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Guidance Scale</label>
-                        <Tooltip content="CFG 引导强度，默认 0.0，Turbo 模型建议保持为 0" />
-                      </div>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={config.guidance}
-                        onChange={(e) => updateConfig("guidance", parseFloat(e.target.value) || 0)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
-
-                    {/* Seed */}
-                    <div className="md:col-span-2 space-y-2">
-                      <div className="flex items-center">
-                        <label className="text-xs text-white/40 uppercase tracking-wider font-semibold">Seed</label>
-                        <Tooltip content="随机种子，默认 42" />
-                      </div>
-                      <input
-                        type="number"
-                        value={config.seed}
-                        onChange={(e) => updateConfig("seed", parseInt(e.target.value) || 42)}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-primary/50 outline-none transition-colors"
-                      />
-                    </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={generatedImage}
+                    alt="Generated"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Hover overlay with actions */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                    <a
+                      href={generatedImage}
+                      download
+                      className="p-4 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+                      title="Download"
+                    >
+                      <Download className="w-6 h-6 text-primary" />
+                    </a>
+                    <a
+                      href={generatedImage}
+                      target="_blank"
+                      className="p-4 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+                      title="Open in new tab"
+                    >
+                      <Maximize2 className="w-6 h-6 text-primary" />
+                    </a>
                   </div>
                 </motion.div>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  {isGenerating ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center"
+                    >
+                      <div className="relative w-20 h-20 mx-auto mb-6">
+                        <div className="absolute inset-0 border-2 border-primary/30 animate-ping" />
+                        <div className="absolute inset-2 border-2 border-primary/50 animate-pulse" />
+                        <div className="absolute inset-4 border-2 border-primary flex items-center justify-center">
+                          <Zap className="w-6 h-6 text-primary" />
+                        </div>
+                      </div>
+                      <p className="font-mono text-xs tracking-widest text-primary/80">GENERATING...</p>
+                      <p className="font-mono text-xs text-white/30 mt-2">This may take a few seconds</p>
+                    </motion.div>
+                  ) : (
+                    <div className="text-center p-8">
+                      <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-primary/20 flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-primary/20" />
+                      </div>
+                      <p className="font-mono text-xs tracking-widest text-white/30">OUTPUT PREVIEW</p>
+                      <p className="font-mono text-xs text-white/20 mt-2">Enter a prompt and generate</p>
+                    </div>
+                  )}
+                </div>
               )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
 
-        {/* Results */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="glass aspect-square rounded-2xl flex items-center justify-center border border-white/5 bg-white/5 overflow-hidden relative group">
-            {generatedImage ? (
-              <motion.img
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                src={generatedImage}
-                alt="Generated"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-            ) : (
-              <div className="text-center text-white/20">
-                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Generated image will appear here</p>
+              {/* Status bar at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 px-4 py-2 bg-black/80 border-t border-primary/20">
+                <div className="flex items-center justify-between font-mono text-xs">
+                  <span className="text-white/30">
+                    {config.width}×{config.height} • {config.steps} steps
+                  </span>
+                  <span className={cn(
+                    "flex items-center gap-2",
+                    isGenerating ? "text-primary" : generatedImage ? "text-primary/60" : "text-white/20"
+                  )}>
+                    <span className={cn(
+                      "w-2 h-2",
+                      isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-white/20"
+                    )} />
+                    {isGenerating ? "PROCESSING" : generatedImage ? "COMPLETE" : "IDLE"}
+                  </span>
+                </div>
               </div>
-            )}
-          </div>
-          <div className="glass aspect-square rounded-2xl flex items-center justify-center border border-white/5 bg-white/5">
-            <div className="text-center text-white/20">
-              <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>History (Coming Soon)</p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
+
+      {/* Noise overlay */}
+      <div className="noise-overlay" />
     </section>
   );
 }

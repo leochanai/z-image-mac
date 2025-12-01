@@ -1,93 +1,177 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Wand2 } from "lucide-react";
+import { ArrowDown, Cpu, Sparkles } from "lucide-react";
 
 export function Hero() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    },
+  };
+
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
-      {/* Background Effects */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] animate-float" style={{ animationDelay: "2s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 rounded-full blur-[128px]" />
+    <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Grid background */}
+      <div className="absolute inset-0 grid-bg" />
+      
+      {/* Neon Rift Effects - Diagonal light beams */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Main diagonal rift */}
+        <div 
+          className="absolute -top-1/2 -right-1/4 w-[200%] h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent rotate-[-35deg] opacity-60"
+          style={{ boxShadow: '0 0 60px 20px rgba(0, 255, 157, 0.3)' }}
+        />
+        <div 
+          className="absolute top-1/3 -left-1/4 w-[150%] h-[1px] bg-gradient-to-r from-transparent via-secondary to-transparent rotate-[-35deg] opacity-40"
+          style={{ boxShadow: '0 0 40px 10px rgba(0, 168, 255, 0.2)' }}
+        />
+        
+        {/* Floating orbs */}
+        <motion.div 
+          animate={{ 
+            y: [0, -30, 0],
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full"
+          style={{ 
+            background: 'radial-gradient(circle, rgba(0, 255, 157, 0.15) 0%, transparent 70%)',
+            filter: 'blur(40px)'
+          }}
+        />
+        <motion.div 
+          animate={{ 
+            y: [0, 20, 0],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-1/3 left-1/4 w-96 h-96 rounded-full"
+          style={{ 
+            background: 'radial-gradient(circle, rgba(0, 168, 255, 0.1) 0%, transparent 70%)',
+            filter: 'blur(60px)'
+          }}
+        />
       </div>
 
-      <div className="container relative z-10 px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 border border-white/10"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-sm text-white/80">Z-Image Turbo Model Live</span>
-        </motion.div>
+      {/* Main Content - Asymmetric layout */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="container relative z-10 px-6 md:px-12 pt-24"
+      >
+        <div className="max-w-5xl">
+          {/* Status Badge */}
+          <motion.div variants={itemVariants} className="mb-8">
+            <div className="inline-flex items-center gap-3 px-4 py-2 border border-primary/30 bg-black/50">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 bg-primary" />
+              </span>
+              <span className="font-mono text-xs tracking-widest text-primary/80">
+                SYSTEM ONLINE // Z-IMAGE TURBO v1.0
+              </span>
+            </div>
+          </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-6xl md:text-8xl font-bold tracking-tight mb-6"
-        >
-          <span className="block text-white mb-2">Imagine</span>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent animate-gradient-x">
-            The Impossible
-          </span>
-        </motion.h1>
+          {/* Main Title - Brutalist Typography */}
+          <motion.h1 variants={itemVariants} className="mb-6">
+            <span className="block font-display text-[clamp(3rem,12vw,10rem)] leading-[0.85] tracking-tight text-white">
+              CREATE
+            </span>
+            <span className="block font-display text-[clamp(3rem,12vw,10rem)] leading-[0.85] tracking-tight">
+              <span className="neon-text">THE</span>
+              <span className="text-white ml-4">FUTURE</span>
+            </span>
+          </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed"
-        >
-          Generate breathtaking visuals in seconds with our state-of-the-art AI.
-          Optimized for macOS Silicon.
-        </motion.p>
+          {/* Subtext with vertical line accent */}
+          <motion.div variants={itemVariants} className="flex items-start gap-6 mb-12 max-w-xl">
+            <div className="w-[2px] h-24 bg-gradient-to-b from-primary to-transparent flex-shrink-0 mt-1" />
+            <p className="font-mono text-sm md:text-base text-white/50 leading-relaxed">
+              Transform text into stunning visuals with state-of-the-art AI generation. 
+              Optimized for Apple Silicon. 
+              <span className="text-primary">No limits. No compromises.</span>
+            </p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col md:flex-row items-center justify-center gap-4"
-        >
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+          {/* CTA Buttons - Brutalist style */}
+          <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
             <button 
               onClick={() => document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" })}
-              className="relative px-8 py-4 bg-white text-black rounded-full font-bold text-lg flex items-center gap-2 hover:scale-105 transition-transform duration-200"
+              className="group relative px-8 py-4 bg-primary text-black font-display text-sm tracking-widest overflow-hidden transition-all hover:pr-12"
             >
-              <Wand2 className="w-5 h-5" />
-              Start Creating
+              <span className="relative z-10 flex items-center gap-3">
+                <Sparkles className="w-5 h-5" />
+                START CREATING
+              </span>
+              <motion.div 
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                <ArrowDown className="w-4 h-4 rotate-[-90deg]" />
+              </motion.div>
             </button>
-          </div>
-          
-          <button className="px-8 py-4 glass rounded-full font-medium text-white hover:bg-white/10 transition-colors flex items-center gap-2 group">
-            View Gallery
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </motion.div>
-      </div>
-      
-      {/* Scroll Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center p-1">
-          <motion.div 
-            animate={{ y: [0, 12, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-            className="w-1 h-1 bg-white rounded-full"
-          />
+            
+            <button className="group px-8 py-4 border-2 border-white/20 hover:border-primary/50 font-display text-sm tracking-widest text-white/70 hover:text-white transition-all flex items-center gap-3">
+              <Cpu className="w-5 h-5 text-primary/50 group-hover:text-primary transition-colors" />
+              VIEW SPECS
+            </button>
+          </motion.div>
+        </div>
+
+        {/* Decorative corner elements */}
+        <div className="absolute top-24 right-12 hidden lg:block">
+          <div className="w-32 h-32 border-t-2 border-r-2 border-primary/20" />
         </div>
       </motion.div>
+
+      {/* Bottom Stats Bar */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="absolute bottom-0 left-0 right-0 border-t border-primary/20 bg-black/80 backdrop-blur-sm"
+      >
+        <div className="container px-6 md:px-12 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-center gap-8">
+              {[
+                { label: "RESOLUTION", value: "1024×1024" },
+                { label: "INFERENCE", value: "~3s" },
+                { label: "MODEL", value: "TURBO" },
+              ].map((stat) => (
+                <div key={stat.label} className="font-mono text-xs">
+                  <span className="text-white/30 mr-2">{stat.label}</span>
+                  <span className="text-primary">{stat.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="font-mono text-xs text-white/30">
+              SCROLL TO GENERATE <span className="text-primary ml-2">↓</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Noise overlay */}
+      <div className="noise-overlay" />
     </section>
   );
 }
