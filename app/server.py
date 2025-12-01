@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import sys
+import traceback
 
 # Add project root to sys.path to ensure app package is resolvable
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,6 +40,7 @@ class GenerateRequest(BaseModel):
 @app.post("/api/generate")
 async def generate(req: GenerateRequest):
     try:
+        print(f"Received request: {req}")
         # Generate image
         # We don't specify output_path so it generates a timestamped one in assets/
         output_path = generate_image(
@@ -62,6 +64,8 @@ async def generate(req: GenerateRequest):
             "prompt": req.prompt
         }
     except Exception as e:
+        print("Error generating image:")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

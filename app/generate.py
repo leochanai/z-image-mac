@@ -23,12 +23,19 @@ def generate_image(
 
     h = height or CONFIG.height
     w = width or CONFIG.width
+    
+    # Ensure divisible by 16 to prevent runtime errors (Z-Image requirement)
+    h = (h // 16) * 16
+    w = (w // 16) * 16
+
     steps = num_inference_steps or CONFIG.num_inference_steps
     scale = guidance_scale if guidance_scale is not None else CONFIG.guidance_scale
 
     generator = torch.Generator(device=CONFIG.device)
     if seed is not None:
         generator = generator.manual_seed(seed)
+
+    print(f"Generating with: prompt='{prompt}', neg='{negative_prompt}', h={h}, w={w}, steps={steps}, scale={scale}, seed={seed}")
 
     result = pipe(
         prompt=prompt,
