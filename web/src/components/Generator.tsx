@@ -5,6 +5,7 @@ import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info,
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useGenerator } from "@/contexts/GeneratorContext";
 import { useSearchParams } from "next/navigation";
 
 interface GenerationConfig {
@@ -50,15 +51,17 @@ export function Generator() {
   const { t } = useLocale();
   const searchParams = useSearchParams();
   
-  const [config, setConfig] = useState<GenerationConfig>({
-    prompt: "",
-    negative_prompt: "",
-    width: 1024,
-    height: 1024,
-    steps: 9,
-    guidance: 0.0,
-    seed: -1,
-  });
+  const {
+    config,
+    setConfig,
+    isGenerating,
+    setIsGenerating,
+    generatedImage,
+    setGeneratedImage,
+    showSettings,
+    setShowSettings,
+    updateConfig
+  } = useGenerator();
 
   useEffect(() => {
     const prompt = searchParams.get("prompt");
@@ -82,9 +85,6 @@ export function Generator() {
     }
   }, [searchParams]);
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [overflowVisible, setOverflowVisible] = useState(false);
 
   const handleGenerate = async () => {
@@ -126,9 +126,7 @@ export function Generator() {
     }
   };
 
-  const updateConfig = (key: keyof GenerationConfig, value: string | number) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
-  };
+
 
   const randomizeSeed = () => {
     updateConfig("seed", Math.floor(Math.random() * 2147483647));
