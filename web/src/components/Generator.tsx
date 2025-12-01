@@ -55,7 +55,7 @@ export function Generator() {
     height: 1024,
     steps: 9,
     guidance: 0.0,
-    seed: 42,
+    seed: -1,
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -68,6 +68,7 @@ export function Generator() {
     setGeneratedImage(null);
     
     try {
+      const seedToSend = config.seed === -1 ? Math.floor(Math.random() * 2147483647) : config.seed;
       const response = await fetch("http://127.0.0.1:8000/api/generate", {
         method: "POST",
         headers: {
@@ -80,7 +81,7 @@ export function Generator() {
           height: config.height,
           steps: config.steps,
           guidance: config.guidance,
-          seed: config.seed,
+          seed: seedToSend,
         }),
       });
 
@@ -325,7 +326,10 @@ export function Generator() {
                           <input
                             type="number"
                             value={config.seed}
-                            onChange={(e) => updateConfig("seed", parseInt(e.target.value) || 42)}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              updateConfig("seed", isNaN(val) ? -1 : val);
+                            }}
                             className="input-brutal flex-1 text-sm"
                           />
                           <button
