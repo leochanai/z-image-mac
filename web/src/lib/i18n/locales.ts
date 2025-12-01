@@ -1,0 +1,137 @@
+export const locales = {
+  zh: {
+    // Navbar
+    nav: {
+      generate: "生成",
+      gallery: "画廊",
+      docs: "文档",
+      launch: "启动",
+    },
+    // Hero
+    hero: {
+      status: "系统在线 // Z-IMAGE TURBO v1.0",
+      title1: "创造",
+      title2: "未来",
+      title2Highlight: "无限",
+      description: "使用最先进的 AI 将文字转化为惊艳的视觉作品。专为 Apple Silicon 优化。",
+      descriptionHighlight: "无限制。无妥协。",
+      ctaCreate: "开始创作",
+      ctaSpecs: "查看规格",
+      statResolution: "分辨率",
+      statInference: "推理时间",
+      statModel: "模型",
+      scrollHint: "向下滚动开始生成",
+    },
+    // Generator
+    generator: {
+      sectionLabel: "01 // 生成",
+      title: "图像",
+      titleHighlight: "合成",
+      promptLabel: "提示词输入",
+      promptPlaceholder: "描述你的想象...",
+      promptHint: "字符 • ⌘+Enter 生成",
+      generate: "生成",
+      processing: "处理中",
+      advancedParams: "高级参数",
+      negativeLabel: "负面提示词",
+      negativePlaceholder: "模糊, 低质量, 水印...",
+      widthLabel: "宽度",
+      heightLabel: "高度",
+      stepsLabel: "步数",
+      cfgLabel: "CFG",
+      seedLabel: "种子",
+      tooltipNegative: "排除不希望出现的元素",
+      tooltipWidth: "图片宽度 (16的倍数)",
+      tooltipHeight: "图片高度 (16的倍数)",
+      tooltipSteps: "采样步数 (1-50)",
+      tooltipCfg: "引导强度 (Turbo建议0)",
+      tooltipSeed: "随机种子 (固定种子可复现结果)",
+      outputPreview: "输出预览",
+      outputHint: "输入提示词并生成",
+      generating: "生成中...",
+      generatingHint: "这可能需要几秒钟",
+      statusIdle: "空闲",
+      statusProcessing: "处理中",
+      statusComplete: "完成",
+    },
+    // Theme
+    theme: {
+      light: "亮色",
+      dark: "暗色",
+    },
+    // Language
+    lang: {
+      zh: "中文",
+      en: "English",
+    },
+  },
+  en: {
+    // Navbar
+    nav: {
+      generate: "GENERATE",
+      gallery: "GALLERY",
+      docs: "DOCS",
+      launch: "LAUNCH",
+    },
+    // Hero
+    hero: {
+      status: "SYSTEM ONLINE // Z-IMAGE TURBO v1.0",
+      title1: "CREATE",
+      title2: "FUTURE",
+      title2Highlight: "THE",
+      description: "Transform text into stunning visuals with state-of-the-art AI generation. Optimized for Apple Silicon.",
+      descriptionHighlight: "No limits. No compromises.",
+      ctaCreate: "START CREATING",
+      ctaSpecs: "VIEW SPECS",
+      statResolution: "RESOLUTION",
+      statInference: "INFERENCE",
+      statModel: "MODEL",
+      scrollHint: "SCROLL TO GENERATE",
+    },
+    // Generator
+    generator: {
+      sectionLabel: "01 // GENERATE",
+      title: "IMAGE",
+      titleHighlight: "SYNTHESIS",
+      promptLabel: "PROMPT INPUT",
+      promptPlaceholder: "Describe your vision...",
+      promptHint: "chars • ⌘+Enter to generate",
+      generate: "GENERATE",
+      processing: "PROCESSING",
+      advancedParams: "ADVANCED PARAMETERS",
+      negativeLabel: "NEGATIVE",
+      negativePlaceholder: "blurry, low quality, watermark...",
+      widthLabel: "WIDTH",
+      heightLabel: "HEIGHT",
+      stepsLabel: "STEPS",
+      cfgLabel: "CFG",
+      seedLabel: "SEED",
+      tooltipNegative: "Exclude unwanted elements",
+      tooltipWidth: "Image width (multiple of 16)",
+      tooltipHeight: "Image height (multiple of 16)",
+      tooltipSteps: "Sampling steps (1-50)",
+      tooltipCfg: "Guidance scale (0 for Turbo)",
+      tooltipSeed: "Random seed (fixed for reproducibility)",
+      outputPreview: "OUTPUT PREVIEW",
+      outputHint: "Enter a prompt and generate",
+      generating: "GENERATING...",
+      generatingHint: "This may take a few seconds",
+      statusIdle: "IDLE",
+      statusProcessing: "PROCESSING",
+      statusComplete: "COMPLETE",
+    },
+    // Theme
+    theme: {
+      light: "Light",
+      dark: "Dark",
+    },
+    // Language
+    lang: {
+      zh: "中文",
+      en: "English",
+    },
+  },
+} as const;
+
+export type Locale = keyof typeof locales;
+export type Translations = typeof locales.zh;

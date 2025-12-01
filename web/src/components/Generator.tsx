@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface GenerationConfig {
   prompt: string;
@@ -33,10 +34,10 @@ const Tooltip = ({ content }: { content: string }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black border border-primary/30 text-xs text-white/80 whitespace-nowrap font-mono z-50"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] text-xs text-[var(--foreground-dim)] whitespace-nowrap font-mono z-50"
           >
             {content}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary/30" />
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[var(--border-color)]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -45,6 +46,8 @@ const Tooltip = ({ content }: { content: string }) => {
 };
 
 export function Generator() {
+  const { t } = useLocale();
+  
   const [config, setConfig] = useState<GenerationConfig>({
     prompt: "",
     negative_prompt: "",
@@ -106,10 +109,10 @@ export function Generator() {
   };
 
   return (
-    <section id="generator" className="min-h-screen py-20 px-6 md:px-12 relative">
+    <section id="generator" className="min-h-screen py-20 px-6 md:px-12 relative bg-[var(--background)]">
       {/* Background */}
       <div className="absolute inset-0 grid-bg opacity-50" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
       
       <div className="container max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
@@ -122,10 +125,10 @@ export function Generator() {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="h-[2px] w-12 bg-primary" />
-            <span className="font-mono text-xs tracking-widest text-primary">02 // GENERATE</span>
+            <span className="font-mono text-xs tracking-widest text-primary">{t.generator.sectionLabel}</span>
           </div>
-          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-white">
-            IMAGE <span className="neon-text">SYNTHESIS</span>
+          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[var(--foreground)]">
+            {t.generator.title} <span className="neon-text">{t.generator.titleHighlight}</span>
           </h2>
         </motion.div>
 
@@ -144,7 +147,7 @@ export function Generator() {
               "relative border-2 transition-all duration-300",
               isGenerating 
                 ? "border-primary animate-pulse-neon" 
-                : "border-primary/30 hover:border-primary/60"
+                : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
             )}>
               {/* Corner decorations */}
               <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
@@ -152,21 +155,21 @@ export function Generator() {
               <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-primary" />
               <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-primary" />
               
-              <div className="p-6 bg-black/80">
+              <div className="p-6 bg-[var(--background)]/80">
                 <div className="flex items-center gap-3 mb-4">
                   <Zap className="w-5 h-5 text-primary" />
-                  <span className="font-mono text-xs tracking-widest text-primary/60">PROMPT INPUT</span>
+                  <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.generator.promptLabel}</span>
                 </div>
                 <textarea
                   value={config.prompt}
                   onChange={(e) => updateConfig("prompt", e.target.value)}
-                  placeholder="Describe your vision... (支持中英文)"
-                  className="w-full h-32 bg-transparent border-none outline-none text-white placeholder:text-white/20 font-mono text-sm leading-relaxed resize-none"
+                  placeholder={t.generator.promptPlaceholder}
+                  className="w-full h-32 bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
                   onKeyDown={(e) => e.key === "Enter" && e.metaKey && handleGenerate()}
                 />
-                <div className="flex items-center justify-between pt-4 border-t border-primary/10">
-                  <span className="font-mono text-xs text-white/30">
-                    {config.prompt.length} chars • ⌘+Enter to generate
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
+                  <span className="font-mono text-xs text-[var(--foreground-muted)]">
+                    {config.prompt.length} {t.generator.promptHint}
                   </span>
                   <button
                     onClick={handleGenerate}
@@ -174,18 +177,18 @@ export function Generator() {
                     className={cn(
                       "font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
                       isGenerating || !config.prompt
-                        ? "bg-white/5 text-white/30 cursor-not-allowed"
-                        : "bg-primary text-black hover:shadow-[0_0_30px_rgba(0,255,157,0.4)]"
+                        ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
+                        : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
                     )}
                   >
                     {isGenerating ? (
                       <>
                         <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                        PROCESSING
+                        {t.generator.processing}
                       </>
                     ) : (
                       <>
-                        GENERATE
+                        {t.generator.generate}
                         <Send className="w-4 h-4" />
                       </>
                     )}
@@ -195,19 +198,19 @@ export function Generator() {
             </div>
 
             {/* Advanced Settings */}
-            <div className="border border-primary/20 bg-black/50">
+            <div className="border border-[var(--border-color)] bg-[var(--background)]/50">
               <button
                 onClick={() => setShowSettings(!showSettings)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-primary/5 transition-colors"
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-[var(--primary-subtle)] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <Settings2 className="w-4 h-4 text-primary/60" />
-                  <span className="font-mono text-xs tracking-widest text-white/60">ADVANCED PARAMETERS</span>
+                  <Settings2 className="w-4 h-4 text-[var(--primary-dim)]" />
+                  <span className="font-mono text-xs tracking-widest text-[var(--foreground-dim)]">{t.generator.advancedParams}</span>
                 </div>
                 {showSettings ? (
-                  <ChevronUp className="w-4 h-4 text-primary/60" />
+                  <ChevronUp className="w-4 h-4 text-[var(--primary-dim)]" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-primary/60" />
+                  <ChevronDown className="w-4 h-4 text-[var(--primary-dim)]" />
                 )}
               </button>
 
@@ -220,18 +223,18 @@ export function Generator() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-6 pb-6 space-y-4 border-t border-primary/10">
+                    <div className="px-6 pb-6 space-y-4 border-t border-[var(--border-color)]">
                       {/* Negative Prompt */}
                       <div className="pt-4">
                         <div className="flex items-center mb-2">
-                          <label className="font-mono text-xs tracking-widest text-white/40">NEGATIVE</label>
-                          <Tooltip content="排除不希望出现的元素" />
+                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.negativeLabel}</label>
+                          <Tooltip content={t.generator.tooltipNegative} />
                         </div>
                         <input
                           type="text"
                           value={config.negative_prompt}
                           onChange={(e) => updateConfig("negative_prompt", e.target.value)}
-                          placeholder="blurry, low quality, watermark..."
+                          placeholder={t.generator.negativePlaceholder}
                           className="input-brutal w-full text-sm"
                         />
                       </div>
@@ -241,8 +244,8 @@ export function Generator() {
                         {/* Width */}
                         <div>
                           <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-white/40">WIDTH</label>
-                            <Tooltip content="图片宽度 (16的倍数)" />
+                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.widthLabel}</label>
+                            <Tooltip content={t.generator.tooltipWidth} />
                           </div>
                           <input
                             type="number"
@@ -262,8 +265,8 @@ export function Generator() {
                         {/* Height */}
                         <div>
                           <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-white/40">HEIGHT</label>
-                            <Tooltip content="图片高度 (16的倍数)" />
+                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.heightLabel}</label>
+                            <Tooltip content={t.generator.tooltipHeight} />
                           </div>
                           <input
                             type="number"
@@ -283,8 +286,8 @@ export function Generator() {
                         {/* Steps */}
                         <div>
                           <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-white/40">STEPS</label>
-                            <Tooltip content="采样步数 (1-50)" />
+                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.stepsLabel}</label>
+                            <Tooltip content={t.generator.tooltipSteps} />
                           </div>
                           <input
                             type="number"
@@ -299,8 +302,8 @@ export function Generator() {
                         {/* Guidance */}
                         <div>
                           <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-white/40">CFG</label>
-                            <Tooltip content="引导强度 (Turbo建议0)" />
+                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.cfgLabel}</label>
+                            <Tooltip content={t.generator.tooltipCfg} />
                           </div>
                           <input
                             type="number"
@@ -315,8 +318,8 @@ export function Generator() {
                       {/* Seed with randomize */}
                       <div>
                         <div className="flex items-center mb-2">
-                          <label className="font-mono text-xs tracking-widest text-white/40">SEED</label>
-                          <Tooltip content="随机种子 (固定种子可复现结果)" />
+                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.seedLabel}</label>
+                          <Tooltip content={t.generator.tooltipSeed} />
                         </div>
                         <div className="flex gap-2">
                           <input
@@ -327,10 +330,10 @@ export function Generator() {
                           />
                           <button
                             onClick={randomizeSeed}
-                            className="px-4 border border-primary/30 hover:border-primary hover:bg-primary/10 transition-all"
+                            className="px-4 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
                             title="Randomize seed"
                           >
-                            <RefreshCw className="w-4 h-4 text-primary/60" />
+                            <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
                           </button>
                         </div>
                       </div>
@@ -350,18 +353,18 @@ export function Generator() {
             className="relative"
           >
             <div className={cn(
-              "relative aspect-square border-2 bg-black/80 overflow-hidden transition-all duration-500",
+              "relative aspect-square border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
               isGenerating 
                 ? "border-primary animate-pulse-neon" 
                 : generatedImage 
-                  ? "border-primary/60" 
-                  : "border-primary/20"
+                  ? "border-[var(--primary-dim)]" 
+                  : "border-[var(--border-color)]"
             )}>
               {/* Corner decorations */}
-              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10" />
-              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-10" />
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-10" />
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 z-10" />
+              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
+              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
+              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
+              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
               
               {/* Scanlines overlay */}
               <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
@@ -383,7 +386,7 @@ export function Generator() {
                     <a
                       href={generatedImage}
                       download
-                      className="p-4 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+                      className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
                       title="Download"
                     >
                       <Download className="w-6 h-6 text-primary" />
@@ -391,7 +394,7 @@ export function Generator() {
                     <a
                       href={generatedImage}
                       target="_blank"
-                      className="p-4 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+                      className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
                       title="Open in new tab"
                     >
                       <Maximize2 className="w-6 h-6 text-primary" />
@@ -407,42 +410,42 @@ export function Generator() {
                       className="text-center"
                     >
                       <div className="relative w-20 h-20 mx-auto mb-6">
-                        <div className="absolute inset-0 border-2 border-primary/30 animate-ping" />
-                        <div className="absolute inset-2 border-2 border-primary/50 animate-pulse" />
+                        <div className="absolute inset-0 border-2 border-[var(--primary-muted)] animate-ping" />
+                        <div className="absolute inset-2 border-2 border-[var(--primary-dim)] animate-pulse" />
                         <div className="absolute inset-4 border-2 border-primary flex items-center justify-center">
                           <Zap className="w-6 h-6 text-primary" />
                         </div>
                       </div>
-                      <p className="font-mono text-xs tracking-widest text-primary/80">GENERATING...</p>
-                      <p className="font-mono text-xs text-white/30 mt-2">This may take a few seconds</p>
+                      <p className="font-mono text-xs tracking-widest text-primary/80">{t.generator.generating}</p>
+                      <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.generatingHint}</p>
                     </motion.div>
                   ) : (
                     <div className="text-center p-8">
-                      <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-primary/20 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-primary/20" />
+                      <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-[var(--primary-muted)]" />
                       </div>
-                      <p className="font-mono text-xs tracking-widest text-white/30">OUTPUT PREVIEW</p>
-                      <p className="font-mono text-xs text-white/20 mt-2">Enter a prompt and generate</p>
+                      <p className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.outputPreview}</p>
+                      <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.outputHint}</p>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Status bar at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 px-4 py-2 bg-black/80 border-t border-primary/20">
+              <div className="absolute bottom-0 left-0 right-0 px-4 py-2 bg-[var(--background)]/80 border-t border-[var(--border-color)]">
                 <div className="flex items-center justify-between font-mono text-xs">
-                  <span className="text-white/30">
+                  <span className="text-[var(--foreground-muted)]">
                     {config.width}×{config.height} • {config.steps} steps
                   </span>
                   <span className={cn(
                     "flex items-center gap-2",
-                    isGenerating ? "text-primary" : generatedImage ? "text-primary/60" : "text-white/20"
+                    isGenerating ? "text-primary" : generatedImage ? "text-[var(--primary-dim)]" : "text-[var(--foreground-muted)]"
                   )}>
                     <span className={cn(
                       "w-2 h-2",
-                      isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-white/20"
+                      isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-[var(--foreground-muted)]"
                     )} />
-                    {isGenerating ? "PROCESSING" : generatedImage ? "COMPLETE" : "IDLE"}
+                    {isGenerating ? t.generator.statusProcessing : generatedImage ? t.generator.statusComplete : t.generator.statusIdle}
                   </span>
                 </div>
               </div>

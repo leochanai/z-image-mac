@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Orbitron, Space_Mono } from "next/font/google";
+import { Providers } from "@/contexts/Providers";
 import "./globals.css";
 
 const orbitron = Orbitron({
@@ -19,8 +20,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z-Image | AI Image Generator",
-  description: "Generate breathtaking visuals with state-of-the-art AI. Optimized for macOS Silicon.",
+  title: "Z-Image | AI 图像生成器",
+  description: "使用最先进的 AI 生成惊艳的视觉作品。专为 macOS Silicon 优化。",
 };
 
 export default function RootLayout({
@@ -29,11 +30,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh" suppressHydrationWarning>
       <body
         className={`${orbitron.variable} ${spaceMono.variable} antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
