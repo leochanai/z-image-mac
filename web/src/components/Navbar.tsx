@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Zap, Github, Terminal, Sun, Moon, Languages } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -9,6 +10,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 export function Navbar() {
   const { locale, setLocale, t } = useLocale();
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
     { key: "generate", label: t.nav.generate, href: "/#generator" },
@@ -98,7 +101,13 @@ export function Navbar() {
 
           {/* Launch Button */}
           <button 
-            onClick={() => document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => {
+              if (pathname === "/") {
+                document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });
+              } else {
+                router.push("/#generator");
+              }
+            }}
             className="group flex items-center gap-2 px-6 py-4 bg-primary text-black font-display text-sm tracking-wider hover:bg-[var(--primary-dim)] transition-colors border-b-2 border-primary"
           >
             <Terminal className="w-4 h-4" />

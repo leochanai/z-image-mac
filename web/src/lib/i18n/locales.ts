@@ -174,7 +174,7 @@ export const locales = {
       en: "English",
     },
   },
-} as const;
+};
 
 export type Locale = keyof typeof locales;
 export type Translations = typeof locales.zh;

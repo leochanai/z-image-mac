@@ -188,7 +188,7 @@ export function Generator() {
                   value={config.prompt}
                   onChange={(e) => updateConfig("prompt", e.target.value)}
                   placeholder={t.generator.promptPlaceholder}
-                  className="w-full h-32 bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
+                  className="w-full h-[228px] bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
                   onKeyDown={(e) => e.key === "Enter" && e.metaKey && handleGenerate()}
                 />
                 <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
