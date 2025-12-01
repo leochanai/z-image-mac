@@ -68,6 +68,28 @@ async def generate(req: GenerateRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/assets")
+async def get_assets():
+    try:
+        files = []
+        if os.path.exists("assets"):
+            # List all files in assets directory, sorted by modification time (newest first)
+            # Filter for image files only to be safe
+            all_files = [f for f in os.listdir("assets") if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+            all_files.sort(key=lambda x: os.path.getmtime(os.path.join("assets", x)), reverse=True)
+            
+            for filename in all_files:
+                files.append({
+                    "name": filename,
+                    "url": f"/assets/{filename}",
+                    "path": f"assets/{filename}"
+                })
+        return files
+    except Exception as e:
+        print("Error listing assets:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -54,6 +54,15 @@ export const locales = {
       statusProcessing: "处理中",
       statusComplete: "完成",
     },
+    gallery: {
+      title: "画廊",
+      titleHighlight: "收藏",
+      empty: "暂无生成图片",
+      emptyHint: "前往生成器创作你的第一幅杰作",
+      download: "下载",
+      open: "打开",
+      delete: "删除",
+    },
     // Theme
     theme: {
       light: "亮色",
@@ -120,10 +129,20 @@ export const locales = {
       statusProcessing: "PROCESSING",
       statusComplete: "COMPLETE",
     },
+    gallery: {
+      title: "GALLERY",
+      titleHighlight: "COLLECTION",
+      empty: "No images generated yet",
+      emptyHint: "Go to the Generator to create your first masterpiece",
+      download: "Download",
+      open: "Open",
+      delete: "Delete",
+    },
     // Theme
     theme: {
       light: "Light",
       dark: "Dark",
+      
     },
     // Language
     lang: {

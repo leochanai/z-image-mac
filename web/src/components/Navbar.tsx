@@ -11,9 +11,9 @@ export function Navbar() {
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
-    { key: "generate", label: t.nav.generate, href: "#generator" },
-    { key: "gallery", label: t.nav.gallery, href: "#" },
-    { key: "docs", label: t.nav.docs, href: "#" },
+    { key: "generate", label: t.nav.generate, href: "/#generator" },
+    { key: "gallery", label: t.nav.gallery, href: "/gallery" },
+    { key: "docs", label: t.nav.docs, href: "/#" },
   ];
 
   return (
