@@ -38,7 +38,7 @@ class GenerateRequest(BaseModel):
     seed: Optional[int] = 42
 
 @app.post("/api/generate")
-async def generate(req: GenerateRequest):
+def generate(req: GenerateRequest):
     try:
         print(f"Received request: {req}")
         # Generate image
@@ -69,7 +69,7 @@ async def generate(req: GenerateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/assets")
-async def get_assets():
+def get_assets():
     try:
         files = []
         if os.path.exists("assets"):
