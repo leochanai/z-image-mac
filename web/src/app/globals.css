@@ -408,3 +408,23 @@ h1, h2, h3, .font-display {
   background: var(--primary);
   color: #000;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3D TRANSFORMS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}

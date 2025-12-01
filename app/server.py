@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
+from PIL import Image
 import os
 import sys
 import traceback
@@ -79,14 +80,44 @@ def get_assets():
             all_files.sort(key=lambda x: os.path.getmtime(os.path.join("assets", x)), reverse=True)
             
             for filename in all_files:
+                file_path = os.path.join("assets", filename)
+                metadata = {}
+                try:
+                    with Image.open(file_path) as img:
+                        # Copy info to avoid keeping file open
+                        metadata = img.info.copy()
+                except Exception as e:
+                    print(f"Error reading metadata for {filename}: {e}")
+
                 files.append({
                     "name": filename,
                     "url": f"/assets/{filename}",
-                    "path": f"assets/{filename}"
+                    "path": f"assets/{filename}",
+                    "metadata": metadata
                 })
         return files
     except Exception as e:
         print("Error listing assets:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/assets/{filename}")
+def delete_asset(filename: str):
+    try:
+        # Validate filename to prevent directory traversal
+        if ".." in filename or "/" in filename or "\\" in filename:
+            raise HTTPException(status_code=400, detail="Invalid filename")
+            
+        file_path = os.path.join("assets", filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return {"status": "success", "message": f"Deleted {filename}"}
+        else:
+            raise HTTPException(status_code=404, detail="File not found")
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error deleting asset {filename}:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 

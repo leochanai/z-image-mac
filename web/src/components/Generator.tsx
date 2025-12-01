@@ -2,9 +2,10 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useSearchParams } from "next/navigation";
 
 interface GenerationConfig {
   prompt: string;
@@ -47,6 +48,7 @@ const Tooltip = ({ content }: { content: string }) => {
 
 export function Generator() {
   const { t } = useLocale();
+  const searchParams = useSearchParams();
   
   const [config, setConfig] = useState<GenerationConfig>({
     prompt: "",
@@ -57,6 +59,28 @@ export function Generator() {
     guidance: 0.0,
     seed: -1,
   });
+
+  useEffect(() => {
+    const prompt = searchParams.get("prompt");
+    if (prompt) {
+      setConfig(prev => ({
+        ...prev,
+        prompt: prompt || "",
+        negative_prompt: searchParams.get("negative_prompt") || "",
+        width: parseInt(searchParams.get("width") || "1024"),
+        height: parseInt(searchParams.get("height") || "1024"),
+        steps: parseInt(searchParams.get("steps") || "9"),
+        guidance: parseFloat(searchParams.get("guidance") || "0.0"),
+        seed: parseInt(searchParams.get("seed") || "-1"),
+      }));
+      
+      // Scroll to generator if params are present
+      const element = document.getElementById("generator");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [searchParams]);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);

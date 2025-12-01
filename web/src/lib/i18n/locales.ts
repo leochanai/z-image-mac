@@ -62,6 +62,18 @@ export const locales = {
       download: "下载",
       open: "打开",
       delete: "删除",
+      deleteConfirm: "确定要删除这张图片吗？",
+      remix: "制作同款",
+      info: {
+        title: "生成信息",
+        prompt: "提示词",
+        negativePrompt: "负面提示词",
+        size: "尺寸",
+        steps: "步数",
+        scale: "引导系数",
+        seed: "种子",
+        flipBack: "翻转返回",
+      },
     },
     // Theme
     theme: {
@@ -137,6 +149,18 @@ export const locales = {
       download: "Download",
       open: "Open",
       delete: "Delete",
+      deleteConfirm: "Are you sure you want to delete this image?",
+      remix: "Remix",
+      info: {
+        title: "GENERATION INFO",
+        prompt: "Prompt",
+        negativePrompt: "Negative Prompt",
+        size: "Size",
+        steps: "Steps",
+        scale: "Scale",
+        seed: "Seed",
+        flipBack: "Flip Back",
+      },
     },
     // Theme
     theme: {

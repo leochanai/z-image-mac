@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
+from PIL import PngImagePlugin
 
 import torch
 
@@ -53,10 +54,22 @@ def generate_image(
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         output_path = f"assets/output_{ts}.png"
 
+    # Create metadata
+    metadata = PngImagePlugin.PngInfo()
+    metadata.add_text("prompt", str(prompt))
+    if negative_prompt:
+        metadata.add_text("negative_prompt", str(negative_prompt))
+    metadata.add_text("height", str(h))
+    metadata.add_text("width", str(w))
+    metadata.add_text("steps", str(steps))
+    metadata.add_text("scale", str(scale))
+    if seed is not None:
+        metadata.add_text("seed", str(seed))
+
     image = result.images[0]
     path = Path(output_path)
     # 默认将图片存放在项目根目录下的 assets/ 目录中；若目录不存在则自动创建。
     if not path.is_absolute():
         path.parent.mkdir(parents=True, exist_ok=True)
-    image.save(path)
+    image.save(path, pnginfo=metadata)
     return path
