@@ -89,7 +89,7 @@ export function Navbar() {
 
           {/* GitHub Link */}
           <Link
-            href="https://github.com/Tongyi-MAI/Z-Image-Turbo"
+            href="https://github.com/leochanai/z-image-mac"
             target="_blank"
             className="flex items-center px-5 border-b-2 border-l-2 border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all bg-[var(--background)]"
           >
