@@ -1,26 +1,36 @@
-# Z-Image macOS 本地推理启动器
+# Z-Image macOS 本地推理应用
 
-一个面向 **macOS** 环境的 **Z-Image-Turbo 推理脚手架项目**，基于 [🤗 diffusers](https://github.com/huggingface/diffusers) 提供的 `ZImagePipeline`，封装了：
+一个面向 **macOS** 环境的 **Z-Image-Turbo 推理应用**，基于 [🤗 diffusers](https://github.com/huggingface/diffusers) 提供的 `ZImagePipeline`，封装了：
 
+- 现代化的 **Web UI**（Next.js 16 + React 19 + Tailwind CSS 4）
+- 高性能的 **REST API**（FastAPI）
 - 简单好用的 **命令行接口（CLI）**
 - 仅适配 **macOS**，对 Apple Silicon (M1/M2/M3, MPS) 做了默认优化
-- 可配置的分辨率、步数、随机种子等参数
 
-> 本项目只包含推理代码和工程骨架，不包含原始 Z-Image 训练代码或论文内容，可作为你后续搭建 Web UI / 服务端的基础。
+> 本项目只包含推理代码和工程骨架，不包含原始 Z-Image 训练代码或论文内容。
 
 ---
 
 ## 功能特性
 
+### 核心能力
 - 使用 `Tongyi-MAI/Z-Image-Turbo` 模型进行本地图片生成
-- 在 macOS 上自动检测设备：优先使用 Apple Silicon 的 `mps`，否则回退到 CPU，统一采用 `torch.float32` 以保证数值稳定（避免 float16 下的黑图 / NaN）
+- 在 macOS 上自动检测设备：优先使用 Apple Silicon 的 `mps`，否则回退到 CPU
+- 统一采用 `torch.float32` 以保证数值稳定（避免 float16 下的黑图 / NaN）
 - 支持中英文 prompt，支持负面提示词
-- 默认采用 Z-Image-Turbo 推荐的高质量配置（可在代码中修改）：
-  - 分辨率：默认 `1024 × 1024`
-  - 采样步数：默认 `num_inference_steps = 9`
-  - 引导强度：默认 & 官方推荐均为 `guidance_scale = 0.0`
-- 默认将图片输出到项目根目录下的 `assets/` 目录，并自动按时间戳命名（避免覆盖旧图）
-- 代码结构清晰，方便你二次封装为 Web API / 后台服务
+
+### Web UI
+- **图像生成器**：输入提示词生成 AI 图像，支持高级参数配置
+- **图片画廊**：浏览、预览、下载已生成的所有图片
+- **多语言支持**：中文 / English 双语切换
+- **主题切换**：亮色 / 暗色模式
+- **响应式设计**：适配桌面和移动设备
+- **赛博朋克风格**：现代化的视觉设计
+
+### 默认配置（可调整）
+- 分辨率：默认 `1024 × 1024`
+- 采样步数：默认 `num_inference_steps = 9`
+- 引导强度：默认 `guidance_scale = 0.0`（Turbo 模型推荐）
 
 ---
 
@@ -28,16 +38,26 @@
 
 ```text
 .
-├── app
-│   ├── __init__.py      # Python 包入口
-│   ├── config.py        # 推理配置（设备、精度、默认分辨率等）
-│   ├── pipeline.py      # ZImagePipeline 的初始化与缓存
-│   ├── generate.py      # 核心生成函数（一次调用生成一张图）
-│   └── cli.py           # 命令行入口：python -m app.cli
-├── assets/              # 生成图片默认输出目录（运行生成命令时自动创建）
-├── .venv/               # 可选：Python 虚拟环境
-├── .gitignore           # Git 忽略规则（如有）
-└── README.md            # 本文件
+├── app/                  # Python 后端
+│   ├── __init__.py       # Python 包入口
+│   ├── config.py         # 推理配置（设备、精度、默认分辨率等）
+│   ├── pipeline.py       # ZImagePipeline 的初始化与缓存
+│   ├── generate.py       # 核心生成函数
+│   ├── server.py         # FastAPI 服务端
+│   └── cli.py            # 命令行入口：python -m app.cli
+├── web/                  # Next.js 前端
+│   ├── src/
+│   │   ├── app/          # Next.js App Router 页面
+│   │   ├── components/   # React 组件
+│   │   ├── contexts/     # React Context（主题、语言）
+│   │   └── lib/          # 工具函数与多语言配置
+│   ├── package.json
+│   └── README.md         # 前端详细文档
+├── assets/               # 生成图片输出目录
+├── start.sh              # 一键启动脚本（前端 + 后端）
+├── stop.sh               # 强制停止脚本
+├── .venv/                # Python 虚拟环境
+└── README.md             # 本文件
 ```
 
 ---
@@ -103,7 +123,23 @@ pip install transformers accelerate huggingface_hub
 
 ## 快速开始
 
-### 方式一：命令行生成一张图片
+### 方式一：一键启动 Web 应用（推荐）
+
+在项目根目录执行：
+
+```bash
+./start.sh
+```
+
+该脚本会自动启动：
+- **后端 API**：`http://localhost:8000`
+- **前端 Web UI**：`http://localhost:3000`
+
+打开浏览器访问 `http://localhost:3000` 即可开始使用。
+
+停止服务：按 `Ctrl+C` 或执行 `./stop.sh`
+
+### 方式二：命令行生成图片（CLI）
 
 在虚拟环境激活状态下，执行：
 
@@ -123,7 +159,6 @@ CLI 参数说明：
 - `--guidance`：CFG 引导强度，默认 `0.0`，Turbo 模型建议保持为 0
 - `--seed`：随机种子，默认 `42`
 - `--output`：输出图片文件路径，默认 `assets/output_{yyyy-MM-dd_HH-mm-ss}.png`
-  （例如：`assets/output_2025-12-01_12-34-56.png`）
 
 示例：快速预览模式（更快，略降质量）：
 
@@ -134,9 +169,7 @@ python -m app.cli \
   --steps 7
 ```
 
-### 方式二：在你自己的 Python 代码中调用
-
-你可以直接复用 `app.generate.generate_image`：
+### 方式三：在 Python 代码中调用
 
 ```python
 from app.generate import generate_image
@@ -148,43 +181,37 @@ path = generate_image(
 print("saved to", path)
 ```
 
-> 注意：确保当前解释器已经在项目根目录，且虚拟环境已激活，使得 `app` 包可以被正确 import。
-
 ---
 
-## 配置与实现说明
+## 技术架构
 
-### `app/config.py`
+### 后端 (`app/`)
 
-- 仅适配 macOS：在非 macOS 平台导入时直接抛出异常
-- 自动检测设备：优先使用 `mps`（Apple Silicon），若不可用则回退 `cpu`
-- 在 MPS / CPU 上统一使用 `torch.float32`，避免 float16 下可能出现的数值不稳定（黑图 / NaN）
-- 统一维护：
-  - `model_id`：默认 `Tongyi-MAI/Z-Image-Turbo`
-  - 默认分辨率、高度 / 宽度
-  - 默认步数 `num_inference_steps`
-  - 默认 `guidance_scale`
+| 模块 | 说明 |
+|------|------|
+| `config.py` | 推理配置：设备检测、精度、默认参数 |
+| `pipeline.py` | ZImagePipeline 初始化与全局缓存 |
+| `generate.py` | 核心生成函数，支持完整参数配置 |
+| `server.py` | FastAPI 服务，提供 REST API |
+| `cli.py` | 命令行接口 |
 
-### `app/pipeline.py`
+### 前端 (`web/`)
 
-- 使用 `ZImagePipeline.from_pretrained(...)` 从 Hugging Face Hub 加载模型
-- 将 pipeline 迁移到配置好的设备（`to(CONFIG.device)`）
-- 全局缓存一个 pipeline 实例，避免每次调用都重新加载权重
-- 为兼容 macOS + MPS，不默认启用 `torch.compile` 或 Flash-Attention 等高级优化，以稳定性优先
+| 技术 | 版本 |
+|------|------|
+| Next.js | 16 (App Router) |
+| React | 19 |
+| Tailwind CSS | 4 |
+| Framer Motion | 动画效果 |
+| TypeScript | 5 |
 
-### `app/generate.py`
+### API 端点
 
-- 封装 `generate_image(...)`：
-  - 接收 prompt / negative_prompt / 分辨率 / 步数 / 引导强度 / 随机种子
-  - 调用 pipeline 完成推理
-  - 若未显式指定 `output_path`，自动将图片保存为 `assets/output_YYYY-MM-DD_HH-mm-ss.png`
-  - 若指定了 `output_path`，会自动创建父目录，并将图片保存到该路径
-
-### `app/cli.py`
-
-- 使用 `argparse` 提供命令行入口
-- 将命令行参数转换为 `generate_image` 调用
-- 适合本地批量测试、与 shell 脚本集成
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/generate` | 生成图像 |
+| GET | `/api/assets` | 获取已生成图片列表 |
+| GET | `/assets/{filename}` | 访问静态图片资源 |
 
 ---
 
@@ -217,9 +244,9 @@ print("saved to", path)
 
 ## 后续扩展方向
 
-- 封装为 HTTP 接口（如使用 FastAPI / Flask）
-- 接入前端 Web UI（如 Gradio、Streamlit）
 - 支持批量生成与任务队列调度
-- 等 Z-Image-Base / Z-Image-Edit 权重开放后，扩展更多能力（如图像编辑）
+- Docker 容器化部署
+- 等 Z-Image-Base / Z-Image-Edit 权重开放后，扩展图像编辑等能力
+- 添加用户认证与图片管理功能
 
 欢迎在此基础上根据自己的需求继续改造项目结构和推理逻辑。
