@@ -14,6 +14,10 @@
   --color-neon: #00ff9d;        /* Matrix Green - 创造之光 */
   --color-neon-alt: #00a8ff;    /* Electric Blue - 次要交互 */
   --color-danger: #ff003c;      /* Warning Red - 关键 CTA */
+  
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
   --color-text: #ffffff;
   --color-text-dim: rgba(255, 255, 255, 0.5);
   --color-text-muted: rgba(255, 255, 255, 0.25);

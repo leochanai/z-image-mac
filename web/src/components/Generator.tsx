@@ -35,7 +35,7 @@ const Tooltip = ({ content }: { content: string }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] text-xs text-[var(--foreground-dim)] whitespace-nowrap font-mono z-50"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] text-xs text-[var(--foreground-dim)] w-max max-w-[200px] text-center font-mono z-50"
           >
             {content}
             <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[var(--border-color)]" />
@@ -85,6 +85,7 @@ export function Generator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [overflowVisible, setOverflowVisible] = useState(false);
 
   const handleGenerate = async () => {
     if (!config.prompt) return;
@@ -225,7 +226,10 @@ export function Generator() {
             {/* Advanced Settings */}
             <div className="border border-[var(--border-color)] bg-[var(--background)]/50">
               <button
-                onClick={() => setShowSettings(!showSettings)}
+                onClick={() => {
+                  if (showSettings) setOverflowVisible(false);
+                  setShowSettings(!showSettings);
+                }}
                 className="w-full flex items-center justify-between px-6 py-4 hover:bg-[var(--primary-subtle)] transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -246,7 +250,10 @@ export function Generator() {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
+                    className={cn("overflow-hidden", overflowVisible && "overflow-visible")}
+                    onAnimationComplete={() => {
+                      if (showSettings) setOverflowVisible(true);
+                    }}
                   >
                     <div className="px-6 pb-6 space-y-4 border-t border-[var(--border-color)]">
                       {/* Negative Prompt */}
