@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2 } from "lucide-react";
+import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -271,46 +271,67 @@ export function Generator() {
 
                       {/* Grid of parameters */}
                       <div className="grid grid-cols-2 gap-4">
-                        {/* Width */}
-                        <div>
+                        {/* Aspect Ratio */}
+                        <div className="col-span-2">
                           <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.widthLabel}</label>
-                            <Tooltip content={t.generator.tooltipWidth} />
+                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.aspectRatioLabel}</label>
+                            <Tooltip content={t.generator.tooltipAspectRatio} />
                           </div>
-                          <input
-                            type="number"
-                            step={16}
-                            min={256}
-                            value={config.width}
-                            onChange={(e) => updateConfig("width", parseInt(e.target.value) || 1024)}
-                            onBlur={() => {
-                              let val = Math.max(256, config.width);
-                              val = Math.round(val / 16) * 16;
-                              updateConfig("width", val);
-                            }}
-                            className="input-brutal w-full text-sm"
-                          />
-                        </div>
-
-                        {/* Height */}
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.generator.heightLabel}</label>
-                            <Tooltip content={t.generator.tooltipHeight} />
+                          <div className="flex gap-3">
+                            {/* Landscape */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateConfig("width", 1024);
+                                updateConfig("height", 768);
+                              }}
+                              className={cn(
+                                "flex-1 px-4 py-3 border transition-all font-mono text-xs tracking-wider flex items-center justify-center gap-2",
+                                config.width > config.height
+                                  ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                                  : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                              )}
+                            >
+                              <RectangleHorizontal className="w-4 h-4" />
+                              <span>{t.generator.landscape}</span>
+                            </button>
+                            
+                            {/* Square */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateConfig("width", 1024);
+                                updateConfig("height", 1024);
+                              }}
+                              className={cn(
+                                "flex-1 px-4 py-3 border transition-all font-mono text-xs tracking-wider flex items-center justify-center gap-2",
+                                config.width === config.height
+                                  ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                                  : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                              )}
+                            >
+                              <SquareIcon className="w-4 h-4" />
+                              <span>{t.generator.square}</span>
+                            </button>
+                            
+                            {/* Portrait */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateConfig("width", 768);
+                                updateConfig("height", 1024);
+                              }}
+                              className={cn(
+                                "flex-1 px-4 py-3 border transition-all font-mono text-xs tracking-wider flex items-center justify-center gap-2",
+                                config.width < config.height
+                                  ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                                  : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                              )}
+                            >
+                              <RectangleVertical className="w-4 h-4" />
+                              <span>{t.generator.portrait}</span>
+                            </button>
                           </div>
-                          <input
-                            type="number"
-                            step={16}
-                            min={256}
-                            value={config.height}
-                            onChange={(e) => updateConfig("height", parseInt(e.target.value) || 1024)}
-                            onBlur={() => {
-                              let val = Math.max(256, config.height);
-                              val = Math.round(val / 16) * 16;
-                              updateConfig("height", val);
-                            }}
-                            className="input-brutal w-full text-sm"
-                          />
                         </div>
 
                         {/* Steps */}
