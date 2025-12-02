@@ -72,15 +72,19 @@ export function Gallery() {
 
     const meta = asset.metadata;
     const params = new URLSearchParams();
-    if (meta.prompt) params.set("prompt", meta.prompt);
-    if (meta.negative_prompt) params.set("negative_prompt", meta.negative_prompt);
-    if (meta.width) params.set("width", meta.width);
-    if (meta.height) params.set("height", meta.height);
-    if (meta.steps) params.set("steps", meta.steps);
-    if (meta.scale) params.set("guidance", meta.scale);
-    if (meta.seed) params.set("seed", meta.seed);
+    
+    // Ensure all values are strings and exist before setting
+    if (meta.prompt) params.set("prompt", String(meta.prompt));
+    if (meta.negative_prompt) params.set("negative_prompt", String(meta.negative_prompt));
+    if (meta.width) params.set("width", String(meta.width));
+    if (meta.height) params.set("height", String(meta.height));
+    if (meta.steps) params.set("steps", String(meta.steps));
+    if (meta.scale) params.set("guidance", String(meta.scale));
+    if (meta.seed) params.set("seed", String(meta.seed));
 
-    router.push(`/?${params.toString()}`);
+    // Use window.location.href to force a full page load and ensure 
+    // the Generator component correctly reads the search params from scratch
+    window.location.href = `/?${params.toString()}`;
   };
 
   return (
