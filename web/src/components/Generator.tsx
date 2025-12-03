@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical } from "lucide-react";
+import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -88,6 +88,7 @@ export function Generator() {
   const [overflowVisible, setOverflowVisible] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
   const [queue, setQueue] = useState<any[]>([]);
@@ -120,6 +121,7 @@ export function Generator() {
     setIsGenerating(true);
     setGeneratedImage(null);
     setJobStatus("queued");
+    setShowSuccess(false);
     
     try {
       const seedToSend = config.seed === -1 ? Math.floor(Math.random() * 2147483647) : config.seed;
@@ -146,6 +148,10 @@ export function Generator() {
       const data = await response.json();
       const jobId = data.job_id;
       latestJobId.current = jobId;
+      
+      // Show success confirmation
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
       
       // Allow submitting next request immediately
       setIsSubmitting(false);
@@ -288,28 +294,74 @@ export function Generator() {
                   <span className="font-mono text-xs text-[var(--foreground-muted)]">
                     {config.prompt.length} {t.generator.promptHint}
                   </span>
-                  <button
+                  <motion.button
                     onClick={handleGenerate}
                     disabled={isSubmitting || !config.prompt}
                     className={cn(
-                      "font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
+                      "relative overflow-hidden font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
                       isSubmitting || !config.prompt
                         ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
-                        : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
+                        : showSuccess
+                          ? "bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)]"
+                          : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
                     )}
+                    whileTap={!isSubmitting && config.prompt ? { scale: 0.95 } : {}}
+                    animate={showSuccess ? { scale: [1, 1.05, 1] } : {}}
+                    transition={{ duration: 0.3 }}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                        {t.generator.processing}
-                      </>
-                    ) : (
-                      <>
-                        {t.generator.generate}
-                        <Send className="w-4 h-4" />
-                      </>
+                    {/* Ripple effect on click */}
+                    {!isSubmitting && !showSuccess && (
+                      <motion.div
+                        className="absolute inset-0 bg-white/30"
+                        initial={{ scale: 0, opacity: 0.5 }}
+                        whileTap={{ scale: 2, opacity: 0 }}
+                        transition={{ duration: 0.6 }}
+                      />
                     )}
-                  </button>
+                    
+                    <AnimatePresence mode="wait">
+                      {isSubmitting ? (
+                        <motion.div
+                          key="submitting"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className="flex items-center gap-3"
+                        >
+                          <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                          <span>{t.generator.processing}</span>
+                        </motion.div>
+                      ) : showSuccess ? (
+                        <motion.div
+                          key="success"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.5 }}
+                          className="flex items-center gap-3"
+                        >
+                          <motion.div
+                            initial={{ rotate: -90 }}
+                            animate={{ rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                          >
+                            <Check className="w-5 h-5" />
+                          </motion.div>
+                          <span>QUEUED</span>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="idle"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className="flex items-center gap-3"
+                        >
+                          <span>{t.generator.generate}</span>
+                          <Send className="w-4 h-4" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 </div>
               </div>
             </div>
