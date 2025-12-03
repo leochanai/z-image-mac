@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useGenerator } from "@/contexts/GeneratorContext";
@@ -87,10 +87,39 @@ export function Generator() {
 
   const [overflowVisible, setOverflowVisible] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
+  const [jobPosition, setJobPosition] = useState<number | null>(null);
+  const [queue, setQueue] = useState<any[]>([]);
+  
+  // Track the latest job ID to ensure the UI only updates for the most recent request
+  const latestJobId = useRef<string | null>(null);
+
+  useEffect(() => {
+    fetchQueue();
+    const interval = setInterval(fetchQueue, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchQueue = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/queue");
+      if (response.ok) {
+        const data = await response.json();
+        setQueue(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch queue:", error);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!config.prompt) return;
+    
+    setIsSubmitting(true);
     setIsGenerating(true);
     setGeneratedImage(null);
+    setJobStatus("queued");
     
     try {
       const seedToSend = config.seed === -1 ? Math.floor(Math.random() * 2147483647) : config.seed;
@@ -115,14 +144,63 @@ export function Generator() {
       }
 
       const data = await response.json();
-      if (data.url) {
-        setGeneratedImage(`http://127.0.0.1:8000${data.url}`);
-      }
+      const jobId = data.job_id;
+      latestJobId.current = jobId;
+      
+      // Allow submitting next request immediately
+      setIsSubmitting(false);
+      
+      // Poll for status
+      const pollInterval = setInterval(async () => {
+        // If this is no longer the latest job, stop polling for UI updates (but let it finish in background if needed? 
+        // Actually, for this simple app, we can just stop polling here. The global queue poller will show it in the list.)
+        if (latestJobId.current !== jobId) {
+          clearInterval(pollInterval);
+          return;
+        }
+
+        try {
+          const statusRes = await fetch(`http://127.0.0.1:8000/api/job/${jobId}`);
+          if (!statusRes.ok) throw new Error("Failed to fetch job status");
+          
+          const statusData = await statusRes.json();
+          
+          // Double check we are still the active job before updating state
+          if (latestJobId.current !== jobId) {
+             clearInterval(pollInterval);
+             return;
+          }
+
+          setJobStatus(statusData.status);
+          setJobPosition(statusData.position);
+          
+          if (statusData.status === "completed") {
+            clearInterval(pollInterval);
+            if (statusData.result && statusData.result.url) {
+              setGeneratedImage(`http://127.0.0.1:8000${statusData.result.url}`);
+            }
+            setIsGenerating(false);
+            setJobStatus(null);
+          } else if (statusData.status === "failed") {
+            clearInterval(pollInterval);
+            setIsGenerating(false);
+            setJobStatus(null);
+            alert(`Generation failed: ${statusData.error}`);
+          }
+        } catch (error) {
+          console.error("Polling error:", error);
+          clearInterval(pollInterval);
+          setIsGenerating(false);
+          setJobStatus(null);
+        }
+      }, 1000);
+
     } catch (error) {
       console.error("Generation failed:", error);
       alert("Generation failed. Please check the console for details.");
-    } finally {
       setIsGenerating(false);
+      setIsSubmitting(false);
+      setJobStatus(null);
     }
   };
 
@@ -132,20 +210,34 @@ export function Generator() {
     updateConfig("seed", Math.floor(Math.random() * 2147483647));
   };
 
+  const [history, setHistory] = useState<any[]>([]);
+
+  // Update history when a job completes
+  useEffect(() => {
+    if (jobStatus === "completed" && generatedImage) {
+      // Avoid duplicates
+      setHistory(prev => {
+        const exists = prev.some(h => h.url === generatedImage);
+        if (exists) return prev;
+        return [{ url: generatedImage, prompt: config.prompt, timestamp: Date.now() }, ...prev];
+      });
+    }
+  }, [jobStatus, generatedImage]);
+
   return (
     <section id="generator" className="min-h-screen py-20 px-6 md:px-12 relative bg-[var(--background)]">
       {/* Background */}
       <div className="absolute inset-0 grid-bg opacity-50" />
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
       
-      <div className="container max-w-7xl mx-auto relative z-10">
+      <div className="container max-w-[1600px] mx-auto relative z-10">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-12"
+          className="mb-8"
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="h-[2px] w-12 bg-primary" />
@@ -156,15 +248,16 @@ export function Generator() {
           </h2>
         </motion.div>
 
-        {/* Main Layout: Input Panel + Preview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: Control Panel */}
+        {/* Main Layout: 3 Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+          
+          {/* Left: Control Panel (4 cols) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
+            className="lg:col-span-4 space-y-6"
           >
             {/* Main Prompt Input */}
             <div className={cn(
@@ -197,15 +290,15 @@ export function Generator() {
                   </span>
                   <button
                     onClick={handleGenerate}
-                    disabled={isGenerating || !config.prompt}
+                    disabled={isSubmitting || !config.prompt}
                     className={cn(
                       "font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
-                      isGenerating || !config.prompt
+                      isSubmitting || !config.prompt
                         ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
                         : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
                     )}
                   >
-                    {isGenerating ? (
+                    {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                         {t.generator.processing}
@@ -398,16 +491,16 @@ export function Generator() {
             </div>
           </motion.div>
 
-          {/* Right: Preview Panel */}
+          {/* Middle: Preview Panel (5 cols) */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="relative"
+            className="lg:col-span-5 relative"
           >
             <div className={cn(
-              "relative aspect-square border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
+              "relative h-[650px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
               isGenerating 
                 ? "border-primary animate-pulse-neon" 
                 : generatedImage 
@@ -433,7 +526,7 @@ export function Generator() {
                   <img
                     src={generatedImage}
                     alt="Generated"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-black/50"
                   />
                   {/* Hover overlay with actions */}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
@@ -470,7 +563,11 @@ export function Generator() {
                           <Zap className="w-6 h-6 text-primary" />
                         </div>
                       </div>
-                      <p className="font-mono text-xs tracking-widest text-primary/80">{t.generator.generating}</p>
+                      <p className="font-mono text-xs tracking-widest text-primary/80">
+                        {jobStatus === "queued" 
+                          ? `QUEUED (POS: ${jobPosition})` 
+                          : t.generator.generating}
+                      </p>
                       <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.generatingHint}</p>
                     </motion.div>
                   ) : (
@@ -499,10 +596,64 @@ export function Generator() {
                       "w-2 h-2",
                       isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-[var(--foreground-muted)]"
                     )} />
-                    {isGenerating ? t.generator.statusProcessing : generatedImage ? t.generator.statusComplete : t.generator.statusIdle}
+                    {isGenerating 
+                      ? (jobStatus === "queued" ? `QUEUED #${jobPosition}` : t.generator.statusProcessing)
+                      : generatedImage ? t.generator.statusComplete : t.generator.statusIdle}
                   </span>
                 </div>
               </div>
+            </div>
+          </motion.div>
+
+          {/* Right: Queue Sidebar (1 col) */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="lg:col-span-1 flex flex-col gap-3 h-[600px]"
+          >
+            <div className="flex-1 overflow-y-auto scrollbar-none space-y-3 flex flex-col items-center">
+              {/* Active Queue Items - Reversed Order (Newest at Top) */}
+              {[...queue].reverse().map((job) => (
+                <div 
+                  key={job.job_id} 
+                  className={cn(
+                    "relative w-16 h-16 rounded flex items-center justify-center transition-all",
+                    job.status === "processing" 
+                      ? "bg-[var(--card-bg)] border border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]" 
+                      : "bg-[var(--background)] border border-[var(--border-color)] opacity-80"
+                  )}
+                  title={job.prompt}
+                >
+                  {job.status === "processing" && (
+                    <div className="absolute inset-0 border border-primary animate-pulse rounded pointer-events-none" />
+                  )}
+                  
+                  {job.status === "processing" ? (
+                    <Zap className="w-6 h-6 text-primary animate-pulse" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-[var(--foreground-muted)]" />
+                      <span className="font-mono text-[10px] text-[var(--foreground-muted)]">#{job.position}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Completed History Items */}
+              {history.map((item, i) => (
+                <div 
+                  key={i}
+                  className="w-16 h-16 rounded overflow-hidden border border-[var(--border-color)] hover:border-primary transition-colors cursor-pointer group relative"
+                  onClick={() => setGeneratedImage(item.url)}
+                  title={item.prompt}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.url} alt="Thumbnail" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>

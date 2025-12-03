@@ -30,9 +30,13 @@ export function Gallery() {
   const [loading, setLoading] = useState(true);
   const [flippedId, setFlippedId] = useState<string | null>(null);
 
+
+
   useEffect(() => {
     fetchImages();
   }, []);
+
+
 
   const fetchImages = async () => {
     try {
@@ -109,6 +113,9 @@ export function Gallery() {
             {t.gallery.title} <span className="neon-text">{t.gallery.titleHighlight}</span>
           </h2>
         </motion.div>
+
+        {/* Queue Section */}
+
 
         {/* Gallery Grid */}
         {loading ? (

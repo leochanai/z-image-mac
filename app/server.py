@@ -2,11 +2,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, List
 from PIL import Image
 import os
 import sys
 import traceback
+import queue
+import threading
+import uuid
+import time
+from datetime import datetime
 
 # Add project root to sys.path to ensure app package is resolvable
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,36 +43,145 @@ class GenerateRequest(BaseModel):
     guidance: Optional[float] = 0.0
     seed: Optional[int] = 42
 
+class JobStatus(BaseModel):
+    job_id: str
+    status: str  # "queued", "processing", "completed", "failed"
+    position: Optional[int] = None
+    result: Optional[Dict] = None
+    error: Optional[str] = None
+    created_at: float
+    prompt: str
+
+# Global Queue and Results
+job_queue = queue.Queue()
+job_results: Dict[str, JobStatus] = {}
+current_job_id: Optional[str] = None
+
+def worker():
+    global current_job_id
+    print("Worker thread started")
+    while True:
+        try:
+            job_id, req = job_queue.get()
+            current_job_id = job_id
+            
+            # Update status to processing
+            if job_id in job_results:
+                job_results[job_id].status = "processing"
+                job_results[job_id].position = 0
+            
+            print(f"Processing job {job_id}: {req.prompt}")
+            
+            try:
+                # Generate image
+                output_path = generate_image(
+                    prompt=req.prompt,
+                    negative_prompt=req.negative_prompt,
+                    height=req.height,
+                    width=req.width,
+                    num_inference_steps=req.steps,
+                    guidance_scale=req.guidance,
+                    seed=req.seed
+                )
+                
+                relative_path = f"/assets/{output_path.name}"
+                
+                # Update result
+                if job_id in job_results:
+                    job_results[job_id].status = "completed"
+                    job_results[job_id].result = {
+                        "url": relative_path,
+                        "prompt": req.prompt
+                    }
+            except Exception as e:
+                print(f"Error processing job {job_id}: {e}")
+                traceback.print_exc()
+                if job_id in job_results:
+                    job_results[job_id].status = "failed"
+                    job_results[job_id].error = str(e)
+            
+            current_job_id = None
+            job_queue.task_done()
+            
+        except Exception as e:
+            print(f"Worker error: {e}")
+            time.sleep(1)
+
+# Start worker thread
+threading.Thread(target=worker, daemon=True).start()
+
 @app.post("/api/generate")
 def generate(req: GenerateRequest):
     try:
-        print(f"Received request: {req}")
-        # Generate image
-        # We don't specify output_path so it generates a timestamped one in assets/
-        output_path = generate_image(
-            prompt=req.prompt,
-            negative_prompt=req.negative_prompt,
-            height=req.height,
-            width=req.width,
-            num_inference_steps=req.steps,
-            guidance_scale=req.guidance,
-            seed=req.seed
+        job_id = str(uuid.uuid4())
+        
+        # Create job status
+        job_status = JobStatus(
+            job_id=job_id,
+            status="queued",
+            position=job_queue.qsize() + 1,
+            created_at=time.time(),
+            prompt=req.prompt
         )
+        job_results[job_id] = job_status
         
-        # Convert absolute path to relative URL
-        # output_path is a Path object, e.g., assets/output_2023...png
-        # We need to return /assets/output_2023...png
-        relative_path = f"/assets/{output_path.name}"
+        # Add to queue
+        job_queue.put((job_id, req))
         
-        return {
-            "status": "success",
-            "url": relative_path,
-            "prompt": req.prompt
-        }
+        return job_status
     except Exception as e:
-        print("Error generating image:")
+        print("Error queuing job:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/job/{job_id}")
+def get_job(job_id: str):
+    if job_id not in job_results:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    job = job_results[job_id]
+    
+    # Update position if still queued
+    if job.status == "queued":
+        # This is a simple estimation. For a real system, we might want a more efficient way to track position.
+        # But for a local single-user/few-users app, iterating the queue is fine or just relying on the initial position (though that's static).
+        # Let's try to find its actual index in the queue.
+        # queue.Queue doesn't support random access/search easily. 
+        # So we'll just return the stored object. The client can infer position or we just don't update it dynamically for now.
+        pass
+        
+    return job
+
+@app.get("/api/queue")
+def get_queue():
+    """Get all jobs currently in queue or processing"""
+    queued_jobs = []
+    
+    # Add currently processing job
+    if current_job_id and current_job_id in job_results:
+        queued_jobs.append(job_results[current_job_id])
+        
+    # Add queued jobs
+    # We can't easily peek into queue.Queue, so we'll filter job_results
+    # This might grow large over time, so we should clean up old jobs eventually.
+    # For now, we filter by status.
+    
+    # Sort by creation time
+    all_jobs = sorted(job_results.values(), key=lambda x: x.created_at)
+    
+    active_jobs = [j for j in all_jobs if j.status in ["queued", "processing"]]
+    
+    # Update positions
+    for i, job in enumerate(active_jobs):
+        if job.status == "processing":
+            job.position = 0
+        else:
+            # If processing job exists, queued items start at 1. If not, start at 1 (waiting to be picked up).
+            # Actually, if there is a processing job (pos 0), the first queued job is pos 1.
+            # If no processing job (worker idle?), the first queued job will be picked up immediately.
+            job.position = i
+            
+    return active_jobs
 
 @app.get("/api/assets")
 def get_assets():

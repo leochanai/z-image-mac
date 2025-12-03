@@ -88,7 +88,7 @@ source .venv/bin/activate
 
 ### 2. 安装 PyTorch（以 Apple Silicon 为例）
 
-在已激活的虚拟环境中执行（**不要**再加 `cpu` 专用 index）：
+在已激活的虚拟环境中执行：
 
 ```bash
 pip install --upgrade pip
