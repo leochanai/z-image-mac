@@ -404,6 +404,32 @@ h1, h2, h3, .font-display {
   box-shadow: var(--glow-primary);
 }
 
+/* Custom scrollbar for queue sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 1px solid var(--border-color);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary-dim);
+  border-radius: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-dim) rgba(0, 0, 0, 0.3);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    SELECTION
    ═══════════════════════════════════════════════════════════════════════════ */

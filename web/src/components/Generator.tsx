@@ -248,16 +248,16 @@ export function Generator() {
           </h2>
         </motion.div>
 
-        {/* Main Layout: 3 Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {/* Main Layout: 2 Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-6">
           
-          {/* Left: Control Panel (4 cols) */}
+          {/* Left: Control Panel */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-4 space-y-6"
+            className="space-y-6"
           >
             {/* Main Prompt Input */}
             <div className={cn(
@@ -491,14 +491,16 @@ export function Generator() {
             </div>
           </motion.div>
 
-          {/* Middle: Preview Panel (5 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="lg:col-span-5 relative"
-          >
+          {/* Right: Middle Preview + Queue (grouped together with tighter spacing) */}
+          <div className="flex gap-3">
+            {/* Middle: Preview Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex-1"
+            >
             <div className={cn(
               "relative h-[650px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
               isGenerating 
@@ -602,60 +604,70 @@ export function Generator() {
                   </span>
                 </div>
               </div>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
 
-          {/* Right: Queue Sidebar (1 col) */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="lg:col-span-1 flex flex-col gap-3 h-[600px]"
-          >
-            <div className="flex-1 overflow-y-auto scrollbar-none space-y-3 flex flex-col items-center">
-              {/* Active Queue Items - Reversed Order (Newest at Top) */}
-              {[...queue].reverse().map((job) => (
-                <div 
-                  key={job.job_id} 
-                  className={cn(
-                    "relative w-16 h-16 rounded flex items-center justify-center transition-all",
-                    job.status === "processing" 
-                      ? "bg-[var(--card-bg)] border border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]" 
-                      : "bg-[var(--background)] border border-[var(--border-color)] opacity-80"
-                  )}
-                  title={job.prompt}
-                >
-                  {job.status === "processing" && (
-                    <div className="absolute inset-0 border border-primary animate-pulse rounded pointer-events-none" />
-                  )}
-                  
-                  {job.status === "processing" ? (
-                    <Zap className="w-6 h-6 text-primary animate-pulse" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-[var(--foreground-muted)]" />
-                      <span className="font-mono text-[10px] text-[var(--foreground-muted)]">#{job.position}</span>
+            {/* Right: Queue Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="w-24"
+            >
+              <div className="relative h-[650px] w-24 border-2 border-[var(--border-color)] bg-[var(--background)]/80">
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
+                
+                {/* Queue content with scroll */}
+                <div className="h-full overflow-y-auto overflow-x-hidden p-4 space-y-3 flex flex-col items-center custom-scrollbar">
+                  {/* Active Queue Items - Reversed Order (Newest at Top) */}
+                  {[...queue].reverse().map((job) => (
+                    <div 
+                      key={job.job_id} 
+                      className={cn(
+                        "relative w-16 h-16 flex-shrink-0 rounded flex items-center justify-center transition-all",
+                        job.status === "processing" 
+                          ? "bg-[var(--card-bg)] border border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]" 
+                          : "bg-[var(--background)] border border-[var(--border-color)] opacity-80"
+                      )}
+                      title={job.prompt}
+                    >
+                      {job.status === "processing" && (
+                        <div className="absolute inset-0 border border-primary animate-pulse rounded pointer-events-none" />
+                      )}
+                      
+                      {job.status === "processing" ? (
+                        <Zap className="w-6 h-6 text-primary animate-pulse" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-[var(--foreground-muted)]" />
+                          <span className="font-mono text-[10px] text-[var(--foreground-muted)]">#{job.position}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  ))}
 
-              {/* Completed History Items */}
-              {history.map((item, i) => (
-                <div 
-                  key={i}
-                  className="w-16 h-16 rounded overflow-hidden border border-[var(--border-color)] hover:border-primary transition-colors cursor-pointer group relative"
-                  onClick={() => setGeneratedImage(item.url)}
-                  title={item.prompt}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.url} alt="Thumbnail" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  {/* Completed History Items */}
+                  {history.map((item, i) => (
+                    <div 
+                      key={i}
+                      className="w-16 h-16 flex-shrink-0 rounded overflow-hidden border border-[var(--border-color)] hover:border-primary transition-colors cursor-pointer group relative"
+                      onClick={() => setGeneratedImage(item.url)}
+                      title={item.prompt}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.url} alt="Thumbnail" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
