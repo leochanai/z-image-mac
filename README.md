@@ -1,6 +1,6 @@
-# Z-Image macOS 本地推理应用
+# Z-Image macOS 本地文生图应用
 
-一个面向 **macOS** 环境的 **Z-Image-Turbo 推理应用**，基于 [🤗 diffusers](https://github.com/huggingface/diffusers) 提供的 `ZImagePipeline`，封装了：
+一个面向 **macOS** 环境的 **Z-Image-Turbo 文生图应用**，基于 [🤗 diffusers](https://github.com/huggingface/diffusers) 提供的 `ZImagePipeline`，封装了：
 
 - 现代化的 **Web UI**（Next.js 16 + React 19 + Tailwind CSS 4）
 - 高性能的 **REST API**（FastAPI）
@@ -8,6 +8,14 @@
 - 仅适配 **macOS**，对 Apple Silicon (M1/M2/M3, MPS) 做了默认优化
 
 > 本项目只包含推理代码和工程骨架，不包含原始 Z-Image 训练代码或论文内容。
+
+---
+
+## ✨ 亮点：开箱即用
+
+- **零配置模型下载**：自动从 Hugging Face Hub 下载 `Tongyi-MAI/Z-Image-Turbo` 权重，无需手动下载或配置
+- **自动设备检测**：自动识别 Apple Silicon GPU (MPS)，无需手动指定设备
+- **一键启动**：`./start.sh` 即可同时启动前端 + 后端，打开浏览器就能用
 
 ---
 
@@ -69,7 +77,7 @@
   - **仅支持 macOS（Darwin）**
   - 强烈推荐：**macOS 12.3+ 且为 Apple Silicon（M1/M2/M3）**，支持 MPS
   - Intel Mac 只能使用 CPU 推理（可以跑，但会明显偏慢）
-- 能访问 Hugging Face Hub 下载模型权重（`Tongyi-MAI/Z-Image-Turbo`）
+- 能访问 Hugging Face Hub（模型权重会在首次运行时自动下载并缓存）
 
 > 非 macOS 平台在导入本项目时会直接抛出异常，本项目不提供官方支持。
 
@@ -79,23 +87,19 @@
 
 ### 1. 创建并激活虚拟环境
 
-在项目根目录执行（仅针对 macOS）：
-
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-### 2. 安装 PyTorch（以 Apple Silicon 为例）
-
-在已激活的虚拟环境中执行：
+### 2. 安装 PyTorch
 
 ```bash
 pip install --upgrade pip
 pip install torch torchvision torchaudio
 ```
 
-安装完后可以简单自检一下：
+（可选）验证 MPS 是否可用
 
 ```bash
 python - << 'PY'
@@ -108,16 +112,25 @@ else:
 PY
 ```
 
-若 `mps available: True`，说明已经可以使用 Apple GPU 进行推理。
+若输出 `mps available: True`，说明可以使用 Apple GPU 加速推理。
 
-### 3. 安装 diffusers 及其依赖
+### 3. 安装 diffusers 及依赖
 
 ```bash
 pip install git+https://github.com/huggingface/diffusers
 pip install transformers accelerate huggingface_hub
 ```
 
-> 说明：使用源码安装 diffusers 是为了确保包含 Z-Image 相关的最新支持。
+> 使用源码安装 diffusers 是为了确保包含 Z-Image 相关的最新支持。
+
+### 4. 验证安装（命令行生成图片）
+
+```bash
+python -m app.cli \
+  --prompt "一位身着红色汉服的年轻女子，精致妆容，高髻凤冠，霓虹灯闪电图案，夜晚街景"
+```
+
+> **首次运行说明**：程序会自动从 Hugging Face Hub 下载 `Tongyi-MAI/Z-Image-Turbo` 权重（约 12GB），下载完成后自动缓存无需手动配置，后续运行无需重复下载。
 
 ---
 
@@ -139,16 +152,7 @@ pip install transformers accelerate huggingface_hub
 
 停止服务：按 `Ctrl+C` 或执行 `./stop.sh`
 
-### 方式二：命令行生成图片（CLI）
-
-在虚拟环境激活状态下，执行：
-
-```bash
-python -m app.cli \
-  --prompt "一位身着红色汉服的年轻女子，精致妆容，高髻凤冠，霓虹灯闪电图案，夜晚街景"
-```
-
-首次运行会从 Hugging Face Hub 下载 `Tongyi-MAI/Z-Image-Turbo` 权重，时间视网络而定；之后再次运行会快很多。
+### 方式二：CLI 命令行
 
 CLI 参数说明：
 
@@ -167,18 +171,6 @@ python -m app.cli \
   --prompt "赛博朋克风格的未来城市夜景，霓虹灯与飞行汽车" \
   --height 768 --width 768 \
   --steps 7
-```
-
-### 方式三：在 Python 代码中调用
-
-```python
-from app.generate import generate_image
-
-path = generate_image(
-    prompt="一只在云端遨游的机械鲸鱼，科幻风格",
-    output_path="assets/whale.png",
-)
-print("saved to", path)
 ```
 
 ---
