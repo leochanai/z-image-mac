@@ -29,6 +29,7 @@
 
 ### Web UI
 - **图像生成器**：输入提示词生成 AI 图像，支持高级参数配置
+- **提示词优化**：使用本地 Ollama AI 模型自动优化提示词，生成更详细的描述
 - **图片画廊**：浏览、预览、下载已生成的所有图片
 - **多语言支持**：中文 / English 双语切换
 - **主题切换**：亮色 / 暗色模式
@@ -78,6 +79,7 @@
   - 强烈推荐：**macOS 12.3+ 且为 Apple Silicon（M1/M2/M3）**，支持 MPS
   - Intel Mac 只能使用 CPU 推理（可以跑，但会明显偏慢）
 - 能访问 Hugging Face Hub（模型权重会在首次运行时自动下载并缓存）
+- **可选**：安装 [Ollama](https://ollama.com) 以启用提示词优化功能
 
 > 非 macOS 平台在导入本项目时会直接抛出异常，本项目不提供官方支持。
 
@@ -122,6 +124,36 @@ pip install transformers accelerate huggingface_hub
 ```
 
 > 使用源码安装 diffusers 是为了确保包含 Z-Image 相关的最新支持。
+
+### 3.5 安装提示词优化依赖（可选）
+
+如果需要使用提示词优化功能：
+
+```bash
+pip install python-dotenv ollama
+```
+
+然后安装并启动 Ollama：
+
+```bash
+# 访问 https://ollama.com 下载安装
+# 或使用 Homebrew
+brew install ollama
+
+# 启动 Ollama 服务
+ollama serve
+
+# 在另一个终端拉取模型（默认使用 kimi-k2-thinking:cloud）
+ollama pull kimi-k2-thinking:cloud
+```
+
+配置 Ollama 模型（在项目根目录创建 `.env` 文件）：
+
+```bash
+echo "OLLAMA_MODEL=kimi-k2-thinking:cloud" > .env
+```
+
+> 提示词优化功能会自动检测输入语言并返回相同语言的优化结果。
 
 ### 4. 验证安装（命令行生成图片）
 
@@ -202,6 +234,7 @@ python -m app.cli \
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/api/generate` | 生成图像 |
+| POST | `/api/optimize` | 优化提示词（需要 Ollama） |
 | GET | `/api/assets` | 获取已生成图片列表 |
 | GET | `/assets/{filename}` | 访问静态图片资源 |
 
@@ -231,6 +264,17 @@ python -m app.cli \
 - 若出现 OOM，可尝试：
   - 降到 768 × 768
   - 或将步数从 9 降到 6–7
+
+### 4. 提示词优化功能无法使用？
+
+确认以下几点：
+
+- Ollama 服务是否正在运行（`ollama serve`）
+- 是否已拉取所需模型（`ollama pull kimi-k2-thinking:cloud`）
+- `.env` 文件中的 `OLLAMA_MODEL` 配置是否正确
+- 后端是否已重启以加载新的环境变量
+
+如果仍有问题，检查后端日志中的错误信息。
 
 ---
 
