@@ -16,6 +16,10 @@ import os
 os.environ["OLLAMA_HOST"] = "127.0.0.1:11434"
 import ollama
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Add project root to sys.path to ensure app package is resolvable
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -48,7 +52,7 @@ class GenerateRequest(BaseModel):
 
 class OptimizeRequest(BaseModel):
     prompt: str
-    model: Optional[str] = "kimi-k2-thinking:cloud"
+    model: Optional[str] = os.getenv("OLLAMA_MODEL", "kimi-k2-thinking:cloud")
 
 class JobStatus(BaseModel):
     job_id: str
@@ -140,14 +144,13 @@ def generate(req: GenerateRequest):
         print("Error queuing job:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/optimize")
 def optimize_prompt(req: OptimizeRequest):
     try:
         # Construct the prompt for optimization
-        system_prompt = "You are an expert at writing stable diffusion prompts. Your task is to take a simple prompt and expand it into a detailed, descriptive prompt that will generate a high-quality image. Focus on lighting, texture, composition, and style. Output ONLY the optimized prompt, no other text."
+        system_prompt = "You are an expert at writing AI text to image prompts. Your task is to take a simple prompt and expand it into a detailed, descriptive prompt that will generate a high-quality image. Focus on lighting, texture, composition, and style. Output ONLY the optimized prompt in the same language as the input, no other text."
         
         full_prompt = f"{system_prompt}\n\nInput: {req.prompt}\n\nOptimized Prompt:"
         

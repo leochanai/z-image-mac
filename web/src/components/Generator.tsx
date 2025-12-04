@@ -224,7 +224,6 @@ export function Generator() {
         },
         body: JSON.stringify({
           prompt: config.prompt,
-          model: "kimi-k2-thinking:cloud" // Default model, could be configurable
         }),
       });
 
