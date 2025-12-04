@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical, Check } from "lucide-react";
+import { Zap, Image as ImageIcon, Send, Settings2, ChevronDown, ChevronUp, Info, Download, RefreshCw, Maximize2, RectangleHorizontal, Square as SquareIcon, RectangleVertical, Check, Sparkles } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -88,6 +88,7 @@ export function Generator() {
   const [overflowVisible, setOverflowVisible] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
@@ -210,6 +211,39 @@ export function Generator() {
     }
   };
 
+  const handleOptimize = async () => {
+    if (!config.prompt) return;
+    
+    setIsOptimizing(true);
+    
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/optimize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: config.prompt,
+          model: "kimi-k2-thinking:cloud" // Default model, could be configurable
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.optimized_prompt) {
+        updateConfig("prompt", data.optimized_prompt);
+      }
+    } catch (error) {
+      console.error("Optimization failed:", error);
+      alert("Optimization failed. Make sure Ollama is running locally.");
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
 
 
   const randomizeSeed = () => {
@@ -290,6 +324,48 @@ export function Generator() {
                   className="w-full h-[228px] bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
                   onKeyDown={(e) => e.key === "Enter" && e.metaKey && handleGenerate()}
                 />
+                
+                {/* Optimization Button */}
+                <div className="absolute top-4 right-4">
+                  <motion.button
+                    onClick={handleOptimize}
+                    disabled={isOptimizing || !config.prompt}
+                    className={cn(
+                      "p-2 rounded-full transition-all duration-300 border border-transparent",
+                      isOptimizing || !config.prompt
+                        ? "text-[var(--foreground-muted)] cursor-not-allowed"
+                        : "text-primary hover:bg-primary/10 hover:border-primary/30"
+                    )}
+                    whileHover={!isOptimizing && config.prompt ? { scale: 1.1 } : {}}
+                    whileTap={!isOptimizing && config.prompt ? { scale: 0.9 } : {}}
+                    title="Optimize Prompt with AI"
+                  >
+                    <AnimatePresence mode="wait">
+                      {isOptimizing ? (
+                        <motion.div
+                          key="optimizing"
+                          initial={{ opacity: 0, rotate: -180 }}
+                          animate={{ opacity: 1, rotate: 0 }}
+                          exit={{ opacity: 0, rotate: 180 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="idle"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+
                 <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
                   <span className="font-mono text-xs text-[var(--foreground-muted)]">
                     {config.prompt.length} {t.generator.promptHint}

@@ -12,6 +12,9 @@ import threading
 import uuid
 import time
 from datetime import datetime
+import os
+os.environ["OLLAMA_HOST"] = "127.0.0.1:11434"
+import ollama
 
 # Add project root to sys.path to ensure app package is resolvable
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,6 +45,10 @@ class GenerateRequest(BaseModel):
     steps: Optional[int] = 9
     guidance: Optional[float] = 0.0
     seed: Optional[int] = 42
+
+class OptimizeRequest(BaseModel):
+    prompt: str
+    model: Optional[str] = "kimi-k2-thinking:cloud"
 
 class JobStatus(BaseModel):
     job_id: str
@@ -133,7 +140,32 @@ def generate(req: GenerateRequest):
         print("Error queuing job:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/optimize")
+def optimize_prompt(req: OptimizeRequest):
+    try:
+        # Construct the prompt for optimization
+        system_prompt = "You are an expert at writing stable diffusion prompts. Your task is to take a simple prompt and expand it into a detailed, descriptive prompt that will generate a high-quality image. Focus on lighting, texture, composition, and style. Output ONLY the optimized prompt, no other text."
+        
+        full_prompt = f"{system_prompt}\n\nInput: {req.prompt}\n\nOptimized Prompt:"
+        
+        # Call Ollama API
+        try:
+            response = ollama.generate(model=req.model, prompt=full_prompt)
+            return {"optimized_prompt": response['response'].strip()}
+                
+        except Exception as e:
+            print(f"Ollama error: {e}")
+            raise HTTPException(status_code=503, detail=f"Ollama error: {str(e)}. Is it running?")
+            
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print("Error optimizing prompt:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 @app.get("/api/job/{job_id}")
 def get_job(job_id: str):
     if job_id not in job_results:
