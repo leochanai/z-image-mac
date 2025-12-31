@@ -13,7 +13,55 @@ from .pipeline import get_edit_pipeline
 
 
 def _round_to_multiple_of_16(x: int) -> int:
+    # floor to avoid accidentally exceeding max constraints
     return max(16, (x // 16) * 16)
+
+
+def _apply_max_side_resize(img: Image.Image, *, max_side: Optional[int]) -> tuple[Image.Image, dict]:
+    """Downscale image to a maximum side length (keep aspect ratio).
+
+    Returns (possibly resized image, resize_info).
+    """
+
+    info: dict = {}
+    if max_side is None:
+        return img, info
+
+    try:
+        ms = int(max_side)
+    except Exception:
+        return img, info
+
+    if ms <= 0:
+        return img, info
+
+    orig_w, orig_h = img.size
+    info["orig_width"] = orig_w
+    info["orig_height"] = orig_h
+    info["max_side"] = ms
+
+    cur_max = max(orig_w, orig_h)
+    if cur_max <= ms:
+        info["resize_scale"] = 1.0
+        return img, info
+
+    scale = ms / float(cur_max)
+    new_w = _round_to_multiple_of_16(int(orig_w * scale))
+    new_h = _round_to_multiple_of_16(int(orig_h * scale))
+
+    # Ensure we don't end up with 0 after rounding
+    new_w = max(16, new_w)
+    new_h = max(16, new_h)
+
+    if (new_w, new_h) == (orig_w, orig_h):
+        info["resize_scale"] = 1.0
+        return img, info
+
+    info["resize_scale"] = scale
+    info["resized_width"] = new_w
+    info["resized_height"] = new_h
+
+    return img.resize((new_w, new_h), Image.LANCZOS), info
 
 
 def edit_image(
@@ -24,6 +72,8 @@ def edit_image(
     strength: float = 0.6,
     height: Optional[int] = None,
     width: Optional[int] = None,
+    # macOS/MPS 优化：默认把最大边压到 768（可在前端选择 512/768/1024）
+    max_side: Optional[int] = 768,
     num_inference_steps: Optional[int] = None,
     guidance_scale: Optional[float] = None,
     seed: Optional[int] = 42,
@@ -48,13 +98,19 @@ def edit_image(
 
     init_image = Image.open(input_path).convert("RGB")
 
-    # If width/height not specified, keep original size.
+    # Keep original size unless explicitly overridden.
     w = int(width) if width is not None else init_image.width
     h = int(height) if height is not None else init_image.height
 
+    # If user didn't force width/height, apply max_side downscale for speed on macOS.
+    resize_info: dict = {}
+    if width is None and height is None:
+        init_image, resize_info = _apply_max_side_resize(init_image, max_side=max_side)
+        w, h = init_image.size
+
     # Ensure divisible by 16 to prevent runtime errors.
-    w = _round_to_multiple_of_16(w)
-    h = _round_to_multiple_of_16(h)
+    w = _round_to_multiple_of_16(int(w))
+    h = _round_to_multiple_of_16(int(h))
 
     if (w, h) != (init_image.width, init_image.height):
         init_image = init_image.resize((w, h), Image.LANCZOS)
@@ -101,6 +157,10 @@ def edit_image(
         "generator": generator,
     }
 
+    # Keep prompt length modest for speed if supported.
+    if is_instruction_edit and sig is not None and "max_sequence_length" in sig.parameters:
+        kwargs.setdefault("max_sequence_length", 256)
+
     # Only pass guidance_scale if pipeline supports it.
     if sig is None or "guidance_scale" in getattr(sig, "parameters", {}):
         kwargs["guidance_scale"] = scale
@@ -125,8 +185,15 @@ def edit_image(
     metadata.add_text("prompt", str(prompt))
     if negative_prompt:
         metadata.add_text("negative_prompt", str(negative_prompt))
+    # Record both final size and original (if resized)
     metadata.add_text("height", str(h))
     metadata.add_text("width", str(w))
+    if resize_info:
+        for k, v in resize_info.items():
+            try:
+                metadata.add_text(str(k), str(v))
+            except Exception:
+                pass
     metadata.add_text("steps", str(steps))
     metadata.add_text("scale", str(scale))
     metadata.add_text("strength", str(strength_val))

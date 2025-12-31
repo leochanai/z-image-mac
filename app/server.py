@@ -68,9 +68,9 @@ class EditJobRequest(BaseModel):
     strength: Optional[float] = 0.6
     height: Optional[int] = None
     width: Optional[int] = None
-    # Qwen Image Edit 示例常用 40 steps
-    steps: Optional[int] = 40
-    # Qwen Image Edit 示例 guidance_scale=1.0
+    # macOS/MPS 默认走 Standard：768 边长 + 25 steps
+    max_side: Optional[int] = 768
+    steps: Optional[int] = 25
     guidance: Optional[float] = 1.0
     seed: Optional[int] = 42
     input_path: str
@@ -126,6 +126,7 @@ def worker():
                         strength=req.strength or 0.6,
                         height=req.height,
                         width=req.width,
+                        max_side=req.max_side,
                         num_inference_steps=req.steps,
                         guidance_scale=req.guidance,
                         seed=req.seed,
@@ -199,7 +200,8 @@ async def edit(
     strength: float = Form(0.6),
     height: Optional[int] = Form(None),
     width: Optional[int] = Form(None),
-    steps: int = Form(40),
+    max_side: Optional[int] = Form(768),
+    steps: int = Form(25),
     guidance: float = Form(1.0),
     seed: int = Form(42),
 ):
@@ -222,6 +224,7 @@ async def edit(
             strength=strength,
             height=height,
             width=width,
+            max_side=max_side,
             steps=steps,
             guidance=guidance,
             seed=seed,

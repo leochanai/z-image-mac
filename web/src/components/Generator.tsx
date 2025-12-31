@@ -8,22 +8,6 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useGenerator } from "@/contexts/GeneratorContext";
 import { useSearchParams } from "next/navigation";
 
-type QueueJob = {
-  job_id: string;
-  status: "queued" | "processing" | "completed" | "failed";
-  position?: number | null;
-  prompt: string;
-  job_type?: "generate" | "edit";
-  result?: {
-    url?: string;
-    prompt?: string;
-    job_type?: string;
-    [key: string]: unknown;
-  } | null;
-  error?: string | null;
-  created_at?: number;
-};
-
 type HistoryItem = {
   url: string;
   prompt: string;
@@ -104,28 +88,9 @@ export function Generator() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
-  const [queue, setQueue] = useState<QueueJob[]>([]);
 
   // Track the latest job ID to ensure the UI only updates for the most recent request
   const latestJobId = useRef<string | null>(null);
-
-  useEffect(() => {
-    fetchQueue();
-    const interval = setInterval(fetchQueue, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchQueue = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/queue");
-      if (response.ok) {
-        const data = await response.json();
-        setQueue(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch queue:", error);
-    }
-  };
 
   const handleGenerate = async () => {
     if (!config.prompt) return;

@@ -6,7 +6,6 @@ import {
   Image as ImageIcon,
   Maximize2,
   RefreshCw,
-  Send,
   Settings2,
   Upload,
   Wand2,
@@ -27,11 +26,15 @@ export function Editor() {
   const [prompt, setPrompt] = useState<string>("");
   const [negativePrompt, setNegativePrompt] = useState<string>("");
   const [strength, setStrength] = useState<number>(0.6);
-  const [steps, setSteps] = useState<number>(40);
+
+  // macOS/MPS 预设：优先速度（Quick/Standard/HQ）
+  type Preset = "quick" | "standard" | "hq" | "custom";
+  const [preset, setPreset] = useState<Preset>("standard");
+
+  const [maxSide, setMaxSide] = useState<number>(768);
+  const [steps, setSteps] = useState<number>(25);
   const [guidance, setGuidance] = useState<number>(1.0);
   const [seed, setSeed] = useState<number>(-1);
-
-  const [showSettings, setShowSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
@@ -47,8 +50,6 @@ export function Editor() {
     const p = searchParams.get("prompt");
     const np = searchParams.get("negative_prompt");
 
-    console.log("[Editor] URL params:", { src, p, np });
-
     if (p) setPrompt(p);
     if (np) setNegativePrompt(np);
 
@@ -57,24 +58,17 @@ export function Editor() {
     let cancelled = false;
     (async () => {
       try {
-        // Use proxy API to avoid CORS issues
-        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}`;
-        console.log("[Editor] Fetching image via proxy:", proxyUrl);
-
-        const res = await fetch(proxyUrl);
-        console.log("[Editor] Proxy response:", res.ok, res.status);
+        // Backend has CORS enabled, so we can fetch directly.
+        const res = await fetch(src);
         if (!res.ok) return;
-
         const blob = await res.blob();
         if (cancelled) return;
-        console.log("[Editor] Got blob:", blob.type, blob.size);
 
         const ext = blob.type.includes("jpeg") ? "jpg" : blob.type.includes("webp") ? "webp" : "png";
         const f = new File([blob], `input.${ext}`, { type: blob.type || "image/png" });
-        console.log("[Editor] Created file:", f.name, f.size);
         setFile(f);
-      } catch (err) {
-        console.error("[Editor] Failed to load image:", err);
+      } catch {
+        // ignore
       }
     })();
 
@@ -85,20 +79,14 @@ export function Editor() {
 
   // Preview URL lifecycle
   useEffect(() => {
-    console.log("[Editor] Preview effect triggered, file:", file);
     if (!file) {
       setInputPreview(null);
       return;
     }
     const url = URL.createObjectURL(file);
-    console.log("[Editor] Created preview URL:", url);
     setInputPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
-
-  const randomizeSeed = () => {
-    setSeed(Math.floor(Math.random() * 2147483647));
-  };
 
   const handleEdit = async () => {
     if (!file || !prompt) return;
@@ -115,6 +103,7 @@ export function Editor() {
       form.append("prompt", prompt);
       if (negativePrompt) form.append("negative_prompt", negativePrompt);
       form.append("strength", String(strength));
+      form.append("max_side", String(maxSide));
       form.append("steps", String(steps));
       form.append("guidance", String(guidance));
       form.append("seed", String(seedToSend));
@@ -133,6 +122,7 @@ export function Editor() {
       latestJobId.current = jobId;
       setIsSubmitting(false);
 
+      let pollFailures = 0;
       const pollInterval = setInterval(async () => {
         if (latestJobId.current !== jobId) {
           clearInterval(pollInterval);
@@ -149,6 +139,7 @@ export function Editor() {
             return;
           }
 
+          pollFailures = 0;
           setJobStatus(statusData.status);
           setJobPosition(statusData.position);
 
@@ -163,9 +154,13 @@ export function Editor() {
             setJobStatus(null);
             alert(`Edit failed: ${statusData.error}`);
           }
-        } catch {
-          clearInterval(pollInterval);
-          setJobStatus(null);
+        } catch (e) {
+          pollFailures += 1;
+          console.error("Polling error:", e);
+          if (pollFailures >= 5) {
+            clearInterval(pollInterval);
+            alert(t.editor.errorGeneric);
+          }
         }
       }, 1000);
     } catch (error) {
@@ -473,6 +468,65 @@ export function Editor() {
                   <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.advancedParams}</span>
                 </div>
 
+                {/* Presets */}
+                <div className="mb-6">
+                  <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.presetLabel}</label>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreset("quick");
+                        setMaxSide(512);
+                        setSteps(15);
+                        setGuidance(1.0);
+                      }}
+                      className={cn(
+                        "px-3 py-2 border text-xs font-mono tracking-wider transition-all",
+                        preset === "quick"
+                          ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                          : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                      )}
+                    >
+                      {t.editor.presetQuick}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreset("standard");
+                        setMaxSide(768);
+                        setSteps(25);
+                        setGuidance(1.0);
+                      }}
+                      className={cn(
+                        "px-3 py-2 border text-xs font-mono tracking-wider transition-all",
+                        preset === "standard"
+                          ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                          : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                      )}
+                    >
+                      {t.editor.presetStandard}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreset("hq");
+                        setMaxSide(1024);
+                        setSteps(40);
+                        setGuidance(1.0);
+                      }}
+                      className={cn(
+                        "px-3 py-2 border text-xs font-mono tracking-wider transition-all",
+                        preset === "hq"
+                          ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                          : "bg-transparent text-[var(--foreground-dim)] border-[var(--border-color)] hover:border-[var(--border-hover)]"
+                      )}
+                    >
+                      {t.editor.presetHQ}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.editor.presetHint}</p>
+                </div>
+
                 <div className="space-y-4">
                   <div>
                     <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.negativeLabel}</label>
@@ -486,6 +540,37 @@ export function Editor() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.maxSideLabel}</label>
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          type="range"
+                          min={512}
+                          max={1024}
+                          step={64}
+                          value={maxSide}
+                          onChange={(e) => {
+                            setPreset("custom");
+                            setMaxSide(parseInt(e.target.value) || 768);
+                          }}
+                          className="flex-1"
+                        />
+                        <input
+                          type="number"
+                          min={256}
+                          max={2048}
+                          step={64}
+                          value={maxSide}
+                          onChange={(e) => {
+                            setPreset("custom");
+                            setMaxSide(parseInt(e.target.value) || 768);
+                          }}
+                          className="input-brutal w-28 text-sm"
+                        />
+                      </div>
+                      <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.editor.maxSideHint}</p>
+                    </div>
+
                     <div>
                       <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.strengthLabel}</label>
                       <input
@@ -505,7 +590,10 @@ export function Editor() {
                         min={1}
                         max={50}
                         value={steps}
-                        onChange={(e) => setSteps(parseInt(e.target.value) || 9)}
+                        onChange={(e) => {
+                          setPreset("custom");
+                          setSteps(parseInt(e.target.value) || 25);
+                        }}
                         className="input-brutal w-full text-sm mt-2"
                       />
                     </div>
@@ -515,7 +603,10 @@ export function Editor() {
                         type="number"
                         step={0.1}
                         value={guidance}
-                        onChange={(e) => setGuidance(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => {
+                          setPreset("custom");
+                          setGuidance(parseFloat(e.target.value) || 1.0);
+                        }}
                         className="input-brutal w-full text-sm mt-2"
                       />
                     </div>
