@@ -50,30 +50,50 @@ export function Editor() {
     const p = searchParams.get("prompt");
     const np = searchParams.get("negative_prompt");
 
+    console.log("[Editor] URL params:", { src, p, np });
+
     if (p) setPrompt(p);
     if (np) setNegativePrompt(np);
 
-    if (!src) return;
+    if (!src) {
+      console.log("[Editor] No src param, skipping image load");
+      return;
+    }
 
     let cancelled = false;
     (async () => {
       try {
-        // Backend has CORS enabled, so we can fetch directly.
-        const res = await fetch(src);
-        if (!res.ok) return;
+        // Use proxy API to avoid CORS issues (backend doesn't have CORS enabled)
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}`;
+        console.log("[Editor] Fetching image via proxy:", proxyUrl);
+
+        const res = await fetch(proxyUrl);
+        console.log("[Editor] Proxy response:", { ok: res.ok, status: res.status, type: res.type });
+        if (!res.ok) {
+          console.error("[Editor] Proxy fetch failed with status:", res.status);
+          return;
+        }
+
         const blob = await res.blob();
-        if (cancelled) return;
+        if (cancelled) {
+          console.log("[Editor] Cancelled, not creating file");
+          return;
+        }
+        console.log("[Editor] Got blob:", { type: blob.type, size: blob.size });
 
         const ext = blob.type.includes("jpeg") ? "jpg" : blob.type.includes("webp") ? "webp" : "png";
         const f = new File([blob], `input.${ext}`, { type: blob.type || "image/png" });
+        console.log("[Editor] Created File object:", { name: f.name, size: f.size, type: f.type });
         setFile(f);
-      } catch {
-        // ignore
+        console.log("[Editor] setFile called successfully");
+      } catch (error) {
+        console.error("[Editor] Failed to load image:", error);
       }
     })();
 
     return () => {
       cancelled = true;
+      console.log("[Editor] Cleanup: cancelled set to true");
     };
   }, [searchParams]);
 
