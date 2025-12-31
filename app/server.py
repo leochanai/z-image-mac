@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional, Dict, List
+from typing import Optional, Dict
+from pathlib import Path
 from PIL import Image
 import os
 import sys
@@ -11,8 +12,7 @@ import queue
 import threading
 import uuid
 import time
-from datetime import datetime
-import os
+
 os.environ["OLLAMA_HOST"] = "127.0.0.1:11434"
 import ollama
 
@@ -21,9 +21,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Add project root to sys.path to ensure app package is resolvable
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+os.chdir(PROJECT_ROOT)
+sys.path.append(str(PROJECT_ROOT))
 
 from app.generate import generate_image
+from app.edit import edit_image
 
 app = FastAPI()
 
@@ -38,8 +41,13 @@ app.add_middleware(
 
 # Mount assets directory to serve generated images
 # Ensure assets directory exists
-os.makedirs("assets", exist_ok=True)
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+ASSETS_DIR = PROJECT_ROOT / "assets"
+ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
+
+# Temporary input images for edit jobs (not mounted)
+INPUT_DIR = PROJECT_ROOT / ".zimage_inputs"
+INPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 class GenerateRequest(BaseModel):
     prompt: str
@@ -54,8 +62,23 @@ class OptimizeRequest(BaseModel):
     prompt: str
     model: Optional[str] = os.getenv("OLLAMA_MODEL", "kimi-k2-thinking:cloud")
 
+class EditJobRequest(BaseModel):
+    prompt: str
+    negative_prompt: Optional[str] = None
+    strength: Optional[float] = 0.6
+    height: Optional[int] = None
+    width: Optional[int] = None
+    # Qwen Image Edit 示例常用 40 steps
+    steps: Optional[int] = 40
+    # Qwen Image Edit 示例 guidance_scale=1.0
+    guidance: Optional[float] = 1.0
+    seed: Optional[int] = 42
+    input_path: str
+
+
 class JobStatus(BaseModel):
     job_id: str
+    job_type: str  # "generate" | "edit"
     status: str  # "queued", "processing", "completed", "failed"
     position: Optional[int] = None
     result: Optional[Dict] = None
@@ -73,36 +96,59 @@ def worker():
     print("Worker thread started")
     while True:
         try:
-            job_id, req = job_queue.get()
+            job_id, job_type, req = job_queue.get()
             current_job_id = job_id
-            
+
             # Update status to processing
             if job_id in job_results:
                 job_results[job_id].status = "processing"
                 job_results[job_id].position = 0
-            
-            print(f"Processing job {job_id}: {req.prompt}")
-            
+                job_results[job_id].job_type = job_type
+
+            print(f"Processing job {job_id} ({job_type}): {req.prompt}")
+
             try:
-                # Generate image
-                output_path = generate_image(
-                    prompt=req.prompt,
-                    negative_prompt=req.negative_prompt,
-                    height=req.height,
-                    width=req.width,
-                    num_inference_steps=req.steps,
-                    guidance_scale=req.guidance,
-                    seed=req.seed
-                )
-                
-                relative_path = f"/assets/{output_path.name}"
-                
-                # Update result
+                if job_type == "generate":
+                    output_path = generate_image(
+                        prompt=req.prompt,
+                        negative_prompt=req.negative_prompt,
+                        height=req.height,
+                        width=req.width,
+                        num_inference_steps=req.steps,
+                        guidance_scale=req.guidance,
+                        seed=req.seed,
+                    )
+                elif job_type == "edit":
+                    output_path = edit_image(
+                        prompt=req.prompt,
+                        input_image_path=req.input_path,
+                        negative_prompt=req.negative_prompt,
+                        strength=req.strength or 0.6,
+                        height=req.height,
+                        width=req.width,
+                        num_inference_steps=req.steps,
+                        guidance_scale=req.guidance,
+                        seed=req.seed,
+                    )
+
+                    # Cleanup temporary input image (best-effort)
+                    try:
+                        p = Path(req.input_path).resolve()
+                        if INPUT_DIR in p.parents and p.exists():
+                            p.unlink()
+                    except Exception:
+                        pass
+                else:
+                    raise ValueError(f"Unknown job_type: {job_type}")
+
+                relative_path = f"/assets/{Path(output_path).name}"
+
                 if job_id in job_results:
                     job_results[job_id].status = "completed"
                     job_results[job_id].result = {
                         "url": relative_path,
-                        "prompt": req.prompt
+                        "prompt": req.prompt,
+                        "job_type": job_type,
                     }
             except Exception as e:
                 print(f"Error processing job {job_id}: {e}")
@@ -110,10 +156,10 @@ def worker():
                 if job_id in job_results:
                     job_results[job_id].status = "failed"
                     job_results[job_id].error = str(e)
-            
+
             current_job_id = None
             job_queue.task_done()
-            
+
         except Exception as e:
             print(f"Worker error: {e}")
             time.sleep(1)
@@ -125,23 +171,78 @@ threading.Thread(target=worker, daemon=True).start()
 def generate(req: GenerateRequest):
     try:
         job_id = str(uuid.uuid4())
-        
-        # Create job status
+
         job_status = JobStatus(
             job_id=job_id,
+            job_type="generate",
             status="queued",
             position=job_queue.qsize() + 1,
             created_at=time.time(),
-            prompt=req.prompt
+            prompt=req.prompt,
         )
         job_results[job_id] = job_status
-        
-        # Add to queue
-        job_queue.put((job_id, req))
-        
+
+        job_queue.put((job_id, "generate", req))
+
         return job_status
     except Exception as e:
         print("Error queuing job:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/edit")
+async def edit(
+    image: UploadFile = File(...),
+    prompt: str = Form(...),
+    negative_prompt: Optional[str] = Form(None),
+    strength: float = Form(0.6),
+    height: Optional[int] = Form(None),
+    width: Optional[int] = Form(None),
+    steps: int = Form(40),
+    guidance: float = Form(1.0),
+    seed: int = Form(42),
+):
+    """Queue an img2img edit job.
+
+    The client should send multipart/form-data.
+    """
+    try:
+        job_id = str(uuid.uuid4())
+
+        # Save uploaded image to a temp folder (best-effort cleanup happens in worker)
+        suffix = Path(image.filename or "input").suffix or ".png"
+        input_path = INPUT_DIR / f"{job_id}{suffix}"
+        contents = await image.read()
+        input_path.write_bytes(contents)
+
+        req = EditJobRequest(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            strength=strength,
+            height=height,
+            width=width,
+            steps=steps,
+            guidance=guidance,
+            seed=seed,
+            input_path=str(input_path),
+        )
+
+        job_status = JobStatus(
+            job_id=job_id,
+            job_type="edit",
+            status="queued",
+            position=job_queue.qsize() + 1,
+            created_at=time.time(),
+            prompt=prompt,
+        )
+        job_results[job_id] = job_status
+
+        job_queue.put((job_id, "edit", req))
+
+        return job_status
+    except Exception as e:
+        print("Error queuing edit job:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 

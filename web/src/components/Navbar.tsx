@@ -15,6 +15,7 @@ export function Navbar() {
 
   const navItems = [
     { key: "generate", label: t.nav.generate, href: "/#generator" },
+    { key: "edit", label: t.nav.edit, href: "/edit" },
     { key: "gallery", label: t.nav.gallery, href: "/gallery" },
     { key: "docs", label: t.nav.docs, href: "/#" },
   ];

@@ -8,15 +8,27 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useGenerator } from "@/contexts/GeneratorContext";
 import { useSearchParams } from "next/navigation";
 
-interface GenerationConfig {
+type QueueJob = {
+  job_id: string;
+  status: "queued" | "processing" | "completed" | "failed";
+  position?: number | null;
   prompt: string;
-  negative_prompt: string;
-  width: number;
-  height: number;
-  steps: number;
-  guidance: number;
-  seed: number;
-}
+  job_type?: "generate" | "edit";
+  result?: {
+    url?: string;
+    prompt?: string;
+    job_type?: string;
+    [key: string]: unknown;
+  } | null;
+  error?: string | null;
+  created_at?: number;
+};
+
+type HistoryItem = {
+  url: string;
+  prompt: string;
+  timestamp: number;
+};
 
 // Simple tooltip without portal to avoid SSR issues
 const Tooltip = ({ content }: { content: string }) => {
@@ -92,7 +104,7 @@ export function Generator() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
-  const [queue, setQueue] = useState<any[]>([]);
+  const [queue, setQueue] = useState<QueueJob[]>([]);
   
   // Track the latest job ID to ensure the UI only updates for the most recent request
   const latestJobId = useRef<string | null>(null);
@@ -249,7 +261,7 @@ export function Generator() {
     updateConfig("seed", Math.floor(Math.random() * 2147483647));
   };
 
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   // Update history when a job completes
   useEffect(() => {

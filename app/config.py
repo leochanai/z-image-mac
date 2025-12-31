@@ -40,8 +40,12 @@ _DTYPE = select_dtype(_DEVICE)
 class ZImageConfig:
     """Configuration for Z-Image-Turbo inference."""
 
-    # Model id on Hugging Face Hub
+    # Model id on Hugging Face Hub (text-to-image)
     model_id: str = "Tongyi-MAI/Z-Image-Turbo"
+
+    # Model id for image editing (instruction edit / img2img)
+    # 默认使用 Qwen 的图片编辑模型；如不需要可留空或改成其它。
+    edit_model_id: str = "Qwen/Qwen-Image-Edit-2511"
 
     # Device / dtype
     device: str = _DEVICE

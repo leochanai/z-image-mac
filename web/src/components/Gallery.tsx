@@ -1,9 +1,8 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { Download, Maximize2, Image as ImageIcon, Trash2, RotateCw, Wand2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Download, Maximize2, Image as ImageIcon, Trash2, RotateCw, Wand2, Pencil } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useRouter } from "next/navigation";
 
@@ -76,7 +75,7 @@ export function Gallery() {
 
     const meta = asset.metadata;
     const params = new URLSearchParams();
-    
+
     // Ensure all values are strings and exist before setting
     if (meta.prompt) params.set("prompt", String(meta.prompt));
     if (meta.negative_prompt) params.set("negative_prompt", String(meta.negative_prompt));
@@ -86,9 +85,21 @@ export function Gallery() {
     if (meta.scale) params.set("guidance", String(meta.scale));
     if (meta.seed) params.set("seed", String(meta.seed));
 
-    // Use window.location.href to force a full page load and ensure 
-    // the Generator component correctly reads the search params from scratch
+    // Force full page load so Generator reads params from scratch
     window.location.href = `/?${params.toString()}`;
+  };
+
+  const editFromGallery = (asset: Asset, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const params = new URLSearchParams();
+    params.set("src", `http://127.0.0.1:8000${asset.url}`);
+
+    const meta = asset.metadata;
+    if (meta?.prompt) params.set("prompt", String(meta.prompt));
+    if (meta?.negative_prompt) params.set("negative_prompt", String(meta.negative_prompt));
+
+    router.push(`/edit?${params.toString()}`);
   };
 
   return (
@@ -136,7 +147,7 @@ export function Gallery() {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image, index) => (
+            {images.map((image) => (
               <div key={image.name} className="relative aspect-square perspective-1000 group">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -209,13 +220,22 @@ export function Gallery() {
                   >
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-[var(--border-color)]">
                       <h3 className="font-mono text-sm text-primary">{t.gallery.info.title}</h3>
-                      <button
-                        onClick={(e) => remixImage(image, e)}
-                        className="group/remix p-2 hover:bg-[var(--primary-subtle)] rounded-md transition-all duration-300 text-[var(--foreground-muted)] hover:text-primary hover:scale-110 hover:shadow-[var(--glow-primary)]"
-                        title={t.gallery.remix}
-                      >
-                        <Wand2 className="w-4 h-4 transition-transform duration-300 group-hover/remix:rotate-12" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => editFromGallery(image, e)}
+                          className="group/edit p-2 hover:bg-[var(--primary-subtle)] rounded-md transition-all duration-300 text-[var(--foreground-muted)] hover:text-primary hover:scale-110 hover:shadow-[var(--glow-primary)]"
+                          title={t.nav.edit}
+                        >
+                          <Pencil className="w-4 h-4 transition-transform duration-300 group-hover/edit:-rotate-12" />
+                        </button>
+                        <button
+                          onClick={(e) => remixImage(image, e)}
+                          className="group/remix p-2 hover:bg-[var(--primary-subtle)] rounded-md transition-all duration-300 text-[var(--foreground-muted)] hover:text-primary hover:scale-110 hover:shadow-[var(--glow-primary)]"
+                          title={t.gallery.remix}
+                        >
+                          <Wand2 className="w-4 h-4 transition-transform duration-300 group-hover/remix:rotate-12" />
+                        </button>
+                      </div>
                     </div>
                     
                     <div className="flex-1 overflow-y-auto space-y-4 text-xs font-mono text-[var(--foreground-muted)] scrollbar-thin">
