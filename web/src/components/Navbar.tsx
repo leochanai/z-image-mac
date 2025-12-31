@@ -30,8 +30,8 @@ export function Navbar() {
       {/* Asymmetric container - aligned left */}
       <div className="flex items-stretch">
         {/* Logo Block - Sharp edge */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="group flex items-center gap-3 px-6 py-4 bg-[var(--background)] border-b-2 border-r-2 border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all duration-300"
         >
           <div className="relative">
@@ -43,20 +43,27 @@ export function Navbar() {
           </span>
         </Link>
 
+
         {/* Navigation Links - Horizontal bar */}
         <div className="hidden md:flex items-center border-b-2 border-[var(--border-color)] bg-[var(--background)]/80 backdrop-blur-sm">
           {navItems.map((item, i) => (
             <Link
               key={item.key}
               href={item.href}
-              className="relative px-6 py-4 font-mono text-xs tracking-widest text-[var(--foreground-dim)] hover:text-primary transition-colors group"
+              className="relative px-6 py-4 font-mono text-xs tracking-widest text-[var(--foreground-dim)] hover:text-primary transition-colors duration-300 group overflow-hidden"
             >
-              <span className="relative z-10">
-                <span className="text-primary/50 mr-1">{String(i + 1).padStart(2, '0')}</span>
-                {item.label}
+              <span className="relative z-10 flex items-center gap-1">
+                <span className="text-primary/50 group-hover:text-primary transition-colors duration-300">{String(i + 1).padStart(2, '0')}</span>
+                <span className="group-hover:translate-x-0.5 transition-transform duration-300">{item.label}</span>
               </span>
-              <div className="absolute inset-0 bg-primary/0 group-hover:bg-[var(--primary-subtle)] transition-colors" />
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              <div className="absolute inset-0 bg-primary/0 group-hover:bg-[var(--primary-subtle)] transition-colors duration-300" />
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary origin-left"
+                initial={{ scaleX: 0 }}
+                whileHover={{ scaleX: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
             </Link>
           ))}
         </div>
@@ -101,7 +108,7 @@ export function Navbar() {
           </Link>
 
           {/* Launch Button */}
-          <button 
+          <button
             onClick={() => {
               if (pathname === "/") {
                 document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });

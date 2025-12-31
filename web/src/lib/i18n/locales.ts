@@ -26,7 +26,7 @@ export const locales = {
     // Generator
     generator: {
       sectionLabel: "01 // 生成",
-      title: "图像",
+      title: "图片",
       titleHighlight: "合成",
       promptLabel: "提示词输入",
       promptPlaceholder: "描述你的想象...",
@@ -63,10 +63,13 @@ export const locales = {
       titleHighlight: "修改",
       inputImage: "输入图片",
       inputHint: "可上传本地图片，或从画廊点“编辑”自动带入。",
+      clickToChange: "点击更换图片",
       promptLabel: "修改指令",
       promptPlaceholder: "描述你想如何修改这张图片...",
       promptHint: "字符",
       edit: "编辑",
+      editBtn: "开始编辑",
+      moreOptions: "更多选项",
       processing: "处理中",
       advancedParams: "高级参数",
       negativeLabel: "负面提示词",
@@ -182,16 +185,19 @@ export const locales = {
       titleHighlight: "EDIT",
       inputImage: "INPUT IMAGE",
       inputHint: "Upload an image, or click 'Edit' from Gallery to preload one.",
+      clickToChange: "Click to change image",
       promptLabel: "EDIT INSTRUCTION",
       promptPlaceholder: "Describe how you want to edit the image...",
       promptHint: "chars",
       edit: "EDIT",
+      editBtn: "START EDIT",
+      moreOptions: "MORE OPTIONS",
       processing: "PROCESSING",
       advancedParams: "ADVANCED PARAMETERS",
       negativeLabel: "NEGATIVE",
       negativePlaceholder: "blurry, low quality, watermark...",
       strengthLabel: "STRENGTH",
-      strengthHint: "Higher strength means larger changes (may be ignored by instruction-edit models; recommended 0.4–0.8).",
+      strengthHint: "Higher strength means larger changes (may be ignored by instruction-edit models; recommended 0.4-0.8).",
       stepsLabel: "STEPS",
       cfgLabel: "CFG",
       seedLabel: "SEED",
@@ -230,7 +236,7 @@ export const locales = {
     theme: {
       light: "Light",
       dark: "Dark",
-      
+
     },
     // Language
     lang: {

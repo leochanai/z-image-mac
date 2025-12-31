@@ -185,227 +185,103 @@ export function Editor() {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[4fr_6fr] gap-6">
-          {/* Left */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Upload */}
-            <div className="border-2 border-[var(--border-color)] bg-[var(--background)]/80 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Upload className="w-5 h-5 text-primary" />
-                <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.inputImage}</span>
-              </div>
+        {/* New Layout: Image-First Design */}
+        <div className="space-y-6">
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] || null;
-                  setFile(f);
-                }}
-                className="block w-full text-sm font-mono text-[var(--foreground-dim)]"
-              />
-              <p className="mt-2 font-mono text-xs text-[var(--foreground-muted)]">{t.editor.inputHint}</p>
-            </div>
-
-            {/* Prompt */}
-            <div className={cn("relative border-2 transition-all duration-300", jobStatus ? "border-primary animate-pulse-neon" : "border-[var(--border-color)] hover:border-[var(--border-hover)]")}>
-              <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
-              <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-primary" />
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-primary" />
-
-              <div className="p-6 bg-[var(--background)]/80">
-                <div className="flex items-center gap-3 mb-4">
-                  <Wand2 className="w-5 h-5 text-primary" />
-                  <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.promptLabel}</span>
-                </div>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={t.editor.promptPlaceholder}
-                  className="w-full h-[180px] bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
-                />
-
-                <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
-                  <span className="font-mono text-xs text-[var(--foreground-muted)]">
-                    {prompt.length} {t.editor.promptHint}
-                  </span>
-                  <motion.button
-                    onClick={handleEdit}
-                    disabled={isSubmitting || !file || !prompt}
-                    className={cn(
-                      "relative overflow-hidden font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
-                      isSubmitting || !file || !prompt
-                        ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
-                        : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
-                    )}
-                    whileTap={!isSubmitting && file && prompt ? { scale: 0.95 } : {}}
-                  >
-                    <AnimatePresence mode="wait">
-                      {isSubmitting ? (
-                        <motion.div
-                          key="submitting"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="flex items-center gap-3"
-                        >
-                          <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                          <span>{t.editor.processing}</span>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="idle"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="flex items-center gap-3"
-                        >
-                          <span>{t.editor.edit}</span>
-                          <Send className="w-4 h-4" />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-
-            {/* Settings */}
-            <div className="border border-[var(--border-color)] bg-[var(--background)]/50">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-[var(--primary-subtle)] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Settings2 className="w-4 h-4 text-[var(--primary-dim)]" />
-                  <span className="font-mono text-xs tracking-widest text-[var(--foreground-dim)]">{t.editor.advancedParams}</span>
-                </div>
-                {showSettings ? (
-                  <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
-                ) : (
-                  <RefreshCw className="w-4 h-4 text-[var(--primary-muted)]" />
-                )}
-              </button>
-
-              <AnimatePresence>
-                {showSettings && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-6 space-y-4 border-t border-[var(--border-color)]">
-                      <div className="pt-4">
-                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.negativeLabel}</label>
-                        <input
-                          type="text"
-                          value={negativePrompt}
-                          onChange={(e) => setNegativePrompt(e.target.value)}
-                          placeholder={t.editor.negativePlaceholder}
-                          className="input-brutal w-full text-sm mt-2"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.strengthLabel}</label>
-                          <input
-                            type="number"
-                            min={0.05}
-                            max={1}
-                            step={0.05}
-                            value={strength}
-                            onChange={(e) => setStrength(parseFloat(e.target.value) || 0.6)}
-                            className="input-brutal w-full text-sm mt-2"
-                          />
-                        </div>
-                        <div>
-                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.stepsLabel}</label>
-                          <input
-                            type="number"
-                            min={1}
-                            max={50}
-                            value={steps}
-                            onChange={(e) => setSteps(parseInt(e.target.value) || 9)}
-                            className="input-brutal w-full text-sm mt-2"
-                          />
-                        </div>
-                        <div>
-                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.cfgLabel}</label>
-                          <input
-                            type="number"
-                            step={0.1}
-                            value={guidance}
-                            onChange={(e) => setGuidance(parseFloat(e.target.value) || 0)}
-                            className="input-brutal w-full text-sm mt-2"
-                          />
-                        </div>
-                        <div>
-                          <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.seedLabel}</label>
-                          <div className="flex gap-2 mt-2">
-                            <input
-                              type="number"
-                              value={seed}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value);
-                                setSeed(Number.isNaN(v) ? -1 : v);
-                              }}
-                              className="input-brutal flex-1 text-sm"
-                            />
-                            <button
-                              onClick={randomizeSeed}
-                              className="px-4 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
-                              title={t.editor.randomizeSeed}
-                            >
-                              <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="font-mono text-xs text-[var(--foreground-muted)]">{t.editor.strengthHint}</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* Right: preview */}
+          {/* TOP: Image Comparison Area */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Input preview */}
-              <div className="relative h-[420px] w-full border-2 border-[var(--border-color)] bg-[var(--background)]/80 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+              {/* Input preview - with integrated upload */}
+              <div
+                className={cn(
+                  "relative h-[450px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all cursor-pointer group",
+                  inputPreview ? "border-[var(--primary-dim)]" : "border-[var(--border-color)] border-dashed hover:border-primary"
+                )}
+                onClick={() => document.getElementById('editor-file-input')?.click()}
+              >
+                <input
+                  id="editor-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    setFile(f);
+                  }}
+                  className="hidden"
+                />
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-5 h-5 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute top-2 right-2 w-5 h-5 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 left-2 w-5 h-5 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 right-2 w-5 h-5 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
+
                 <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
                 {inputPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={inputPreview} alt="Input" className="w-full h-full object-contain bg-black/50" />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={inputPreview} alt="Input" className="w-full h-full object-contain bg-black/50" />
+                    {/* Hover overlay to change image */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="text-center">
+                        <Upload className="w-8 h-8 text-primary mx-auto mb-2" />
+                        <p className="font-mono text-xs text-primary">{t.editor.clickToChange}</p>
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                    <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-[var(--primary-muted)]" />
-                    </div>
-                    <p className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.inputPreview}</p>
+                    <motion.div
+                      className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center group-hover:border-primary transition-colors"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      <Upload className="w-8 h-8 text-[var(--primary-muted)] group-hover:text-primary transition-colors" />
+                    </motion.div>
+                    <p className="font-mono text-sm tracking-widest text-[var(--foreground-dim)]">{t.editor.inputImage}</p>
+                    <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.editor.inputHint}</p>
                   </div>
                 )}
+                {/* Label */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[var(--background)]/90 px-4 py-1 border border-[var(--border-color)]">
+                  <span className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">INPUT</span>
+                </div>
+              </div>
+
+              {/* Arrow indicator */}
+              <div className="hidden md:flex flex-col items-center justify-center px-4">
+                <motion.div
+                  animate={{ x: [0, 10, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-primary" />
+                  <div className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
+                    jobStatus ? "border-primary bg-primary/20 animate-pulse" : "border-[var(--border-color)] bg-[var(--background)]"
+                  )}>
+                    <Wand2 className={cn("w-5 h-5", jobStatus ? "text-primary" : "text-[var(--foreground-muted)]")} />
+                  </div>
+                  <div className="w-16 h-[2px] bg-gradient-to-r from-primary to-transparent" />
+                </motion.div>
+                <p className="font-mono text-[10px] tracking-widest text-[var(--foreground-muted)] mt-2">AI EDIT</p>
               </div>
 
               {/* Output preview */}
-              <div className={cn("relative h-[420px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500", jobStatus ? "border-primary animate-pulse-neon" : "border-[var(--border-color)]")}>
+              <div className={cn(
+                "relative h-[450px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
+                jobStatus ? "border-primary animate-pulse-neon" : outputImage ? "border-[var(--primary-dim)]" : "border-[var(--border-color)]"
+              )}>
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-5 h-5 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute top-2 right-2 w-5 h-5 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 left-2 w-5 h-5 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                <div className="absolute bottom-2 right-2 w-5 h-5 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
+
                 <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
                 {outputImage ? (
                   <div className="relative w-full h-full group">
@@ -433,31 +309,232 @@ export function Editor() {
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     {jobStatus ? (
-                      <div className="text-center">
-                        <div className="relative w-20 h-20 mx-auto mb-6">
-                          <div className="absolute inset-0 border-2 border-[var(--primary-muted)] animate-ping" />
-                          <div className="absolute inset-2 border-2 border-[var(--primary-dim)] animate-pulse" />
-                          <div className="absolute inset-4 border-2 border-primary flex items-center justify-center">
-                            <Wand2 className="w-6 h-6 text-primary" />
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center"
+                      >
+                        <div className="relative w-24 h-24 mx-auto mb-6">
+                          <motion.div
+                            className="absolute inset-0 border-2 border-primary rounded-lg"
+                            animate={{
+                              scale: [1, 1.2, 1],
+                              opacity: [0.5, 0, 0.5]
+                            }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                          <motion.div
+                            className="absolute inset-2 border border-primary-dim rounded-md"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                          />
+                          <div className="absolute inset-4 flex items-center justify-center bg-primary/10 rounded">
+                            <Wand2 className="w-8 h-8 text-primary animate-pulse" />
                           </div>
                         </div>
-                        <p className="font-mono text-xs tracking-widest text-primary/80">
+                        <p className="font-mono text-sm tracking-widest text-primary">
                           {jobStatus === "queued" ? `QUEUED (POS: ${jobPosition})` : t.editor.editing}
                         </p>
                         <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.editor.editingHint}</p>
-                      </div>
+                      </motion.div>
                     ) : (
                       <div className="text-center p-8">
-                        <div className="w-20 h-20 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-[var(--primary-muted)]" />
-                        </div>
-                        <p className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.outputPreview}</p>
+                        <motion.div
+                          className="w-24 h-24 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                        >
+                          <ImageIcon className="w-10 h-10 text-[var(--primary-muted)]" />
+                        </motion.div>
+                        <p className="font-mono text-sm tracking-widest text-[var(--foreground-dim)]">{t.editor.outputPreview}</p>
                         <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.editor.outputHint}</p>
                       </div>
                     )}
                   </div>
                 )}
+                {/* Label */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[var(--background)]/90 px-4 py-1 border border-[var(--border-color)]">
+                  <span className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">OUTPUT</span>
+                </div>
               </div>
+            </div>
+          </motion.div>
+
+          {/* BOTTOM: Control Panel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="border-2 border-[var(--border-color)] bg-[var(--background)]/80">
+              {/* Corner decorations */}
+              <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
+
+              <div className="p-6">
+                {/* Prompt input */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Wand2 className="w-5 h-5 text-primary" />
+                  <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.promptLabel}</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-end">
+                  <div className="space-y-4">
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder={t.editor.promptPlaceholder}
+                      className="w-full h-[100px] bg-[var(--input-bg)] border border-[var(--border-color)] p-4 text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none focus:border-primary focus:outline-none transition-colors"
+                    />
+
+                    {/* Compact parameters row */}
+                    <div className="flex flex-wrap gap-4 items-center">
+                      <div className="flex items-center gap-2">
+                        <label className="font-mono text-xs text-[var(--foreground-muted)]">{t.editor.strengthLabel}:</label>
+                        <input
+                          type="number"
+                          min={0.05}
+                          max={1}
+                          step={0.05}
+                          value={strength}
+                          onChange={(e) => setStrength(parseFloat(e.target.value) || 0.6)}
+                          className="input-brutal w-20 text-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="font-mono text-xs text-[var(--foreground-muted)]">{t.editor.stepsLabel}:</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={steps}
+                          onChange={(e) => setSteps(parseInt(e.target.value) || 9)}
+                          className="input-brutal w-20 text-sm"
+                        />
+                      </div>
+                      <button
+                        onClick={() => setShowSettings(!showSettings)}
+                        className="flex items-center gap-2 px-3 py-2 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all font-mono text-xs"
+                      >
+                        <Settings2 className="w-4 h-4 text-[var(--primary-dim)]" />
+                        {t.editor.moreOptions}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Generate button */}
+                  <motion.button
+                    onClick={handleEdit}
+                    disabled={isSubmitting || !file || !prompt}
+                    className={cn(
+                      "relative overflow-hidden font-display text-sm tracking-widest px-8 py-4 transition-all duration-300 flex items-center gap-3 h-fit",
+                      isSubmitting || !file || !prompt
+                        ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
+                        : "bg-primary text-black hover:shadow-[0_0_30px_rgba(0,255,157,0.5)]"
+                    )}
+                    whileHover={!isSubmitting && file && prompt ? { scale: 1.02 } : {}}
+                    whileTap={!isSubmitting && file && prompt ? { scale: 0.95 } : {}}
+                  >
+                    {/* Scanning light effect */}
+                    {!isSubmitting && file && prompt && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '200%' }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatDelay: 3,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    )}
+                    <AnimatePresence mode="wait">
+                      {isSubmitting ? (
+                        <motion.div
+                          key="submitting"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-3"
+                        >
+                          <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                          <span>{t.editor.processing}</span>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="idle"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-3"
+                        >
+                          <span>{t.editor.editBtn}</span>
+                          <Wand2 className="w-4 h-4" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Expandable advanced settings */}
+              <AnimatePresence>
+                {showSettings && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden border-t border-[var(--border-color)]"
+                  >
+                    <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.negativeLabel}</label>
+                        <input
+                          type="text"
+                          value={negativePrompt}
+                          onChange={(e) => setNegativePrompt(e.target.value)}
+                          placeholder={t.editor.negativePlaceholder}
+                          className="input-brutal w-full text-sm mt-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.cfgLabel}</label>
+                        <input
+                          type="number"
+                          step={0.1}
+                          value={guidance}
+                          onChange={(e) => setGuidance(parseFloat(e.target.value) || 0)}
+                          className="input-brutal w-full text-sm mt-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.seedLabel}</label>
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            type="number"
+                            value={seed}
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value);
+                              setSeed(Number.isNaN(v) ? -1 : v);
+                            }}
+                            className="input-brutal flex-1 text-sm"
+                          />
+                          <button
+                            onClick={() => setSeed(Math.floor(Math.random() * 1000000))}
+                            className="px-3 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
+                            title="Randomize seed"
+                          >
+                            <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>

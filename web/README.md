@@ -1,12 +1,12 @@
 # Z-Image Web 前端
 
-Z-Image 项目的 Web 前端，基于 **Next.js 16** + **React 19** + **Tailwind CSS 4** 构建，提供现代化的赛博朋克风格图像生成界面。
+Z-Image 项目的 Web 前端，基于 **Next.js 16** + **React 19** + **Tailwind CSS 4** 构建，提供现代化的赛博朋克风格图片生成界面。
 
 ---
 
 ## 功能特性
 
-- **图像生成器**：输入提示词，调用后端 API 生成 AI 图像
+- **图片生成器**：输入提示词，调用后端 API 生成 AI 图片
 - **参数控制**：支持负面提示词、分辨率、采样步数、CFG 引导强度、随机种子等高级配置
 - **图片画廊**：浏览已生成的所有图片，支持下载和预览
 - **多语言支持**：中文 / English 双语切换
@@ -38,7 +38,7 @@ web/
 │   ├── components/            # React 组件
 │   │   ├── Navbar.tsx         # 导航栏
 │   │   ├── Hero.tsx           # 首页 Hero 区域
-│   │   ├── Generator.tsx      # 图像生成器主组件
+│   │   ├── Generator.tsx      # 图片生成器主组件
 │   │   └── Gallery.tsx        # 画廊组件
 │   ├── contexts/              # React Context
 │   │   ├── LocaleContext.tsx  # 多语言上下文
@@ -91,7 +91,7 @@ npm start
 
 前端依赖后端提供的以下 API（默认运行在 `http://127.0.0.1:8000`）：
 
-- `POST /api/generate` — 生成图像
+- `POST /api/generate` — 生成图片
   - 参数：`prompt`, `negative_prompt`, `width`, `height`, `steps`, `guidance`, `seed`
   - 返回：`{ status, url, prompt }`
 

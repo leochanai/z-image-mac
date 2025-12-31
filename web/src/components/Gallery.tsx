@@ -107,7 +107,7 @@ export function Gallery() {
       {/* Background */}
       <div className="absolute inset-0 grid-bg opacity-50" />
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
-      
+
       <div className="container max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <motion.div
@@ -151,32 +151,43 @@ export function Gallery() {
               <div key={image.name} className="relative aspect-square perspective-1000 group">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: 1, 
+                  animate={{
+                    opacity: 1,
                     y: 0,
                     rotateY: flippedId === image.name ? 180 : 0
                   }}
+                  whileHover={flippedId !== image.name ? {
+                    y: -8,
+                    rotateY: 3,
+                    rotateX: -3,
+                  } : {}}
                   transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                   className="w-full h-full relative preserve-3d cursor-pointer"
-                  style={{ transformStyle: "preserve-3d" }}
+                  style={{ transformStyle: "preserve-3d", transformPerspective: 1000 }}
                   onClick={() => {
                     console.log("Card clicked:", image.name);
                     setFlippedId(flippedId === image.name ? null : image.name);
                   }}
                 >
+                  {/* Glow border effect on hover */}
+                  <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10">
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-secondary to-primary blur-sm" />
+                    <div className="absolute inset-px rounded-lg bg-[var(--background)]" />
+                  </div>
+
                   {/* Front Face */}
-                  <div 
-                    className="absolute inset-0 backface-hidden rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--background)]"
+                  <div
+                    className="absolute inset-0 backface-hidden rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--background)] group-hover:border-primary/50 transition-colors duration-300"
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`http://127.0.0.1:8000${image.url}`}
                       alt={image.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       loading="lazy"
                     />
-                    
+
                     {/* Overlay Actions */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                       <a
@@ -214,7 +225,7 @@ export function Gallery() {
                   </div>
 
                   {/* Back Face */}
-                  <div 
+                  <div
                     className="absolute inset-0 backface-hidden rotate-y-180 rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--card-bg)] p-6 flex flex-col"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                   >
@@ -237,7 +248,7 @@ export function Gallery() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="flex-1 overflow-y-auto space-y-4 text-xs font-mono text-[var(--foreground-muted)] scrollbar-thin">
                       {image.metadata ? (
                         <>

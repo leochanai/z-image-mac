@@ -4,6 +4,54 @@ import { motion } from "framer-motion";
 import { ArrowDown, Cpu, Sparkles } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 
+// Floating light orbs for atmospheric effect
+const FloatingOrbs = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(15)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-1 h-1 bg-primary rounded-full"
+        style={{
+          left: `${10 + Math.random() * 80}%`,
+          top: `${10 + Math.random() * 80}%`,
+        }}
+        animate={{
+          y: [0, -20 - Math.random() * 20, 0],
+          opacity: [0.2, 0.7, 0.2],
+          scale: [1, 1.5 + Math.random(), 1],
+        }}
+        transition={{
+          duration: 3 + Math.random() * 4,
+          repeat: Infinity,
+          delay: Math.random() * 3,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+    {/* Blue accent orbs */}
+    {[...Array(8)].map((_, i) => (
+      <motion.div
+        key={`blue-${i}`}
+        className="absolute w-0.5 h-0.5 bg-secondary rounded-full"
+        style={{
+          left: `${20 + Math.random() * 60}%`,
+          top: `${20 + Math.random() * 60}%`,
+        }}
+        animate={{
+          y: [0, -15 - Math.random() * 15, 0],
+          opacity: [0.1, 0.5, 0.1],
+        }}
+        transition={{
+          duration: 4 + Math.random() * 3,
+          repeat: Infinity,
+          delay: Math.random() * 2,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+  </div>
+);
+
 export function Hero() {
   const { t } = useLocale();
 
@@ -35,42 +83,48 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[var(--background)]">
+      {/* Mesh gradient background */}
+      <div className="absolute inset-0 mesh-gradient-bg" />
+
       {/* Grid background */}
       <div className="absolute inset-0 grid-bg" />
-      
+
+      {/* Floating light particles */}
+      <FloatingOrbs />
+
       {/* Neon Rift Effects - Diagonal light beams */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Main diagonal rift */}
-        <div 
+        <div
           className="absolute -top-1/2 -right-1/4 w-[200%] h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent rotate-[-35deg] opacity-60"
           style={{ boxShadow: 'var(--glow-primary)' }}
         />
-        <div 
+        <div
           className="absolute top-1/3 -left-1/4 w-[150%] h-[1px] bg-gradient-to-r from-transparent via-secondary to-transparent rotate-[-35deg] opacity-40"
           style={{ boxShadow: '0 0 40px 10px var(--secondary)' }}
         />
-        
+
         {/* Floating orbs */}
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             y: [0, -30, 0],
             opacity: [0.3, 0.6, 0.3]
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full"
-          style={{ 
+          style={{
             background: 'radial-gradient(circle, var(--primary-muted) 0%, transparent 70%)',
             filter: 'blur(40px)'
           }}
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             y: [0, 20, 0],
             opacity: [0.2, 0.4, 0.2]
           }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           className="absolute bottom-1/3 left-1/4 w-96 h-96 rounded-full"
-          style={{ 
+          style={{
             background: 'radial-gradient(circle, var(--primary-subtle) 0%, transparent 70%)',
             filter: 'blur(60px)'
           }}
@@ -120,7 +174,7 @@ export function Hero() {
 
           {/* CTA Buttons - Brutalist style */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
-            <button 
+            <button
               onClick={() => document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" })}
               className="group relative px-8 py-4 bg-primary text-black font-display text-sm tracking-widest overflow-hidden transition-all hover:pr-12"
             >
@@ -128,7 +182,7 @@ export function Hero() {
                 <Sparkles className="w-5 h-5" />
                 {t.hero.ctaCreate}
               </span>
-              <motion.div 
+              <motion.div
                 className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1, repeat: Infinity }}
@@ -136,7 +190,7 @@ export function Hero() {
                 <ArrowDown className="w-4 h-4 rotate-[-90deg]" />
               </motion.div>
             </button>
-            
+
             <button className="group px-8 py-4 border-2 border-[var(--foreground-muted)] hover:border-[var(--primary-dim)] font-display text-sm tracking-widest text-[var(--foreground-dim)] hover:text-[var(--foreground)] transition-all flex items-center gap-3">
               <Cpu className="w-5 h-5 text-[var(--primary-dim)] group-hover:text-primary transition-colors" />
               {t.hero.ctaSpecs}
@@ -151,7 +205,7 @@ export function Hero() {
       </motion.div>
 
       {/* Bottom Stats Bar */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.8 }}

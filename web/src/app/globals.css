@@ -10,82 +10,133 @@
   --color-void: #000000;
   --color-surface: #0a0a0a;
   --color-elevated: #111111;
-  
-  --color-neon: #00ff9d;        /* Matrix Green - 创造之光 */
-  --color-neon-alt: #00a8ff;    /* Electric Blue - 次要交互 */
-  --color-danger: #ff003c;      /* Warning Red - 关键 CTA */
-  
+
+  --color-neon: #00ff9d;
+  /* Matrix Green - 创造之光 */
+  --color-neon-alt: #00a8ff;
+  /* Electric Blue - 次要交互 */
+  --color-danger: #ff003c;
+  /* Warning Red - 关键 CTA */
+
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-text: #ffffff;
   --color-text-dim: rgba(255, 255, 255, 0.5);
   --color-text-muted: rgba(255, 255, 255, 0.25);
-  
+
   /* ─── FONTS ─── */
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
-  
+
   /* ─── BRUTALIST BORDERS ─── */
   --border-brutal: 2px solid var(--color-neon);
   --border-subtle: 1px solid rgba(0, 255, 157, 0.2);
-  
+
   /* ─── NEON GLOW SHADOWS ─── */
   --glow-neon: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
   --glow-neon-intense: 0 0 30px rgba(0, 255, 157, 0.6), 0 0 60px rgba(0, 255, 157, 0.3), 0 0 100px rgba(0, 255, 157, 0.15);
   --glow-danger: 0 0 20px rgba(255, 0, 60, 0.5), 0 0 40px rgba(255, 0, 60, 0.25);
-  
+
   /* ─── ANIMATIONS ─── */
   --animate-pulse-neon: pulse-neon 2s ease-in-out infinite;
   --animate-flicker: flicker 0.15s ease-in-out infinite;
   --animate-breathe: breathe 3s ease-in-out infinite;
   --animate-scan: scan 8s linear infinite;
   --animate-glitch: glitch 0.3s ease-in-out;
-  
+
   @keyframes pulse-neon {
-    0%, 100% { 
+
+    0%,
+    100% {
       box-shadow: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
     }
-    50% { 
+
+    50% {
       box-shadow: 0 0 30px rgba(0, 255, 157, 0.6), 0 0 60px rgba(0, 255, 157, 0.3);
     }
   }
-  
+
   @keyframes flicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.8;
+    }
   }
-  
+
   @keyframes breathe {
-    0%, 100% { 
+
+    0%,
+    100% {
       transform: scale(1);
       opacity: 0.8;
     }
-    50% { 
+
+    50% {
       transform: scale(1.02);
       opacity: 1;
     }
   }
-  
+
   @keyframes scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
+    0% {
+      transform: translateY(-100%);
+    }
+
+    100% {
+      transform: translateY(100vh);
+    }
   }
-  
+
   @keyframes glitch {
-    0% { transform: translate(0); }
-    20% { transform: translate(-2px, 2px); }
-    40% { transform: translate(-2px, -2px); }
-    60% { transform: translate(2px, 2px); }
-    80% { transform: translate(2px, -2px); }
-    100% { transform: translate(0); }
+    0% {
+      transform: translate(0);
+    }
+
+    20% {
+      transform: translate(-2px, 2px);
+    }
+
+    40% {
+      transform: translate(-2px, -2px);
+    }
+
+    60% {
+      transform: translate(2px, 2px);
+    }
+
+    80% {
+      transform: translate(2px, -2px);
+    }
+
+    100% {
+      transform: translate(0);
+    }
   }
-  
+
   @keyframes float-diagonal {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(10px, -10px) rotate(1deg); }
-    50% { transform: translate(0, -20px) rotate(0deg); }
-    75% { transform: translate(-10px, -10px) rotate(-1deg); }
+
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+      transform: translate(10px, -10px) rotate(1deg);
+    }
+
+    50% {
+      transform: translate(0, -20px) rotate(0deg);
+    }
+
+    75% {
+      transform: translate(-10px, -10px) rotate(-1deg);
+    }
   }
 }
 
@@ -95,33 +146,34 @@
 
 :root,
 [data-theme="dark"] {
-  /* Default font variables (avoid relying on next/font/google at build-time) */
-  --font-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  /* Font variables - enhanced by next/font/google in layout.tsx */
+  --font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-body: 'Exo 2', ui-sans-serif, system-ui, sans-serif;
   --background: #000000;
   --background-alt: #0a0a0a;
   --surface: #111111;
   --foreground: #ffffff;
   --foreground-dim: rgba(255, 255, 255, 0.5);
   --foreground-muted: rgba(255, 255, 255, 0.25);
-  
+
   --primary: #00ff9d;
   --primary-dim: rgba(0, 255, 157, 0.6);
   --primary-muted: rgba(0, 255, 157, 0.3);
   --primary-subtle: rgba(0, 255, 157, 0.1);
-  
+
   --secondary: #00a8ff;
   --accent: #ff003c;
-  
+
   --border-color: rgba(0, 255, 157, 0.3);
   --border-hover: rgba(0, 255, 157, 0.6);
-  
+
   --card-bg: rgba(10, 10, 10, 0.9);
   --input-bg: rgba(0, 0, 0, 0.5);
-  
+
   --glow-primary: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
   --glow-intense: 0 0 30px rgba(0, 255, 157, 0.6), 0 0 60px rgba(0, 255, 157, 0.3);
-  
+
   --grid-color: rgba(0, 255, 157, 0.03);
   --noise-opacity: 0.03;
 }
@@ -138,25 +190,25 @@
   --foreground: #0a0a0a;
   --foreground-dim: rgba(10, 10, 10, 0.6);
   --foreground-muted: rgba(10, 10, 10, 0.35);
-  
+
   /* Darker, more saturated neon for contrast on light bg */
   --primary: #00b36b;
   --primary-dim: rgba(0, 179, 107, 0.7);
   --primary-muted: rgba(0, 179, 107, 0.4);
   --primary-subtle: rgba(0, 179, 107, 0.1);
-  
+
   --secondary: #0080cc;
   --accent: #cc0033;
-  
+
   --border-color: rgba(0, 179, 107, 0.4);
   --border-hover: rgba(0, 179, 107, 0.8);
-  
+
   --card-bg: rgba(255, 255, 255, 0.9);
   --input-bg: rgba(255, 255, 255, 0.8);
-  
+
   --glow-primary: 0 0 15px rgba(0, 179, 107, 0.3), 0 0 30px rgba(0, 179, 107, 0.15);
   --glow-intense: 0 0 25px rgba(0, 179, 107, 0.5), 0 0 50px rgba(0, 179, 107, 0.25);
-  
+
   --grid-color: rgba(0, 179, 107, 0.06);
   --noise-opacity: 0.015;
 }
@@ -168,7 +220,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-mono), 'Courier New', monospace;
+  font-family: var(--font-body), var(--font-mono), 'Courier New', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -177,7 +229,10 @@ body {
 }
 
 /* Display font for headings */
-h1, h2, h3, .font-display {
+h1,
+h2,
+h3,
+.font-display {
   font-family: var(--font-display), sans-serif;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -199,11 +254,90 @@ h1, h2, h3, .font-display {
 
 /* Grid background */
 .grid-bg {
-  background-image: 
+  background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: center center;
+}
+
+/* Dynamic mesh gradient background */
+@keyframes gradient-drift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.mesh-gradient-bg {
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(0, 255, 157, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0, 168, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 0, 60, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, var(--background) 0%, var(--background-alt) 50%, var(--background) 100%);
+  background-size: 200% 200%;
+  animation: gradient-drift 20s ease-in-out infinite;
+}
+
+/* Float animation */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-loading {
+  background: linear-gradient(90deg,
+      var(--background) 25%,
+      var(--primary-subtle) 50%,
+      var(--background) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Subtle pulse glow */
+@keyframes subtle-pulse {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 3s ease-in-out infinite;
 }
 
 /* Scanline effect */
@@ -212,13 +346,11 @@ h1, h2, h3, .font-display {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.1) 2px,
-    rgba(0, 0, 0, 0.1) 4px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px);
   z-index: 10;
 }
 
@@ -226,12 +358,12 @@ h1, h2, h3, .font-display {
    BRUTALIST COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Sharp-edged card */
+/* Sharp-edged card - Enhanced hover effects */
 .brutal-card {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .brutal-card::before {
@@ -240,29 +372,75 @@ h1, h2, h3, .font-display {
   inset: -1px;
   background: linear-gradient(135deg, var(--primary-muted), transparent 50%);
   pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.brutal-card:hover::before {
+  opacity: 1;
+}
+
+.brutal-card::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--primary-dim);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.brutal-card:hover::after {
+  opacity: 1;
 }
 
 .brutal-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--glow-primary);
-  transform: translate(-2px, -2px);
+  border-color: var(--primary);
+  box-shadow:
+    var(--glow-primary),
+    inset 0 0 20px rgba(0, 255, 157, 0.05);
+  transform: translate(-4px, -4px);
 }
 
 /* Neon border glow */
 .neon-border {
   border: 2px solid var(--primary);
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(0, 255, 157, 0.3),
     inset 0 0 10px rgba(0, 255, 157, 0.1);
 }
 
-/* Neon text */
+/* Neon text - Enhanced with more glow layers */
 .neon-text {
   color: var(--primary);
-  text-shadow: 
-    0 0 10px rgba(0, 255, 157, 0.8),
+  text-shadow:
+    0 0 5px rgba(0, 255, 157, 0.9),
+    0 0 10px rgba(0, 255, 157, 0.7),
     0 0 20px rgba(0, 255, 157, 0.5),
-    0 0 30px rgba(0, 255, 157, 0.3);
+    0 0 40px rgba(0, 255, 157, 0.3),
+    0 0 80px rgba(0, 255, 157, 0.15);
+}
+
+.neon-text-blue {
+  color: var(--secondary);
+  text-shadow:
+    0 0 5px rgba(0, 168, 255, 0.9),
+    0 0 10px rgba(0, 168, 255, 0.7),
+    0 0 20px rgba(0, 168, 255, 0.5),
+    0 0 40px rgba(0, 168, 255, 0.3);
+}
+
+.neon-text-danger {
+  color: var(--accent);
+  text-shadow:
+    0 0 5px rgba(255, 0, 60, 0.9),
+    0 0 10px rgba(255, 0, 60, 0.7),
+    0 0 20px rgba(255, 0, 60, 0.5),
+    0 0 40px rgba(255, 0, 60, 0.3);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -376,13 +554,11 @@ h1, h2, h3, .font-display {
 
 /* Diagonal line decoration */
 .diagonal-lines {
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 10px,
-    rgba(0, 255, 157, 0.05) 10px,
-    rgba(0, 255, 157, 0.05) 11px
-  );
+  background: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 255, 157, 0.05) 10px,
+      rgba(0, 255, 157, 0.05) 11px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
