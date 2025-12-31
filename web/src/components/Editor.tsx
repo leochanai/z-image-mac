@@ -47,6 +47,8 @@ export function Editor() {
     const p = searchParams.get("prompt");
     const np = searchParams.get("negative_prompt");
 
+    console.log("[Editor] URL params:", { src, p, np });
+
     if (p) setPrompt(p);
     if (np) setNegativePrompt(np);
 
@@ -55,15 +57,24 @@ export function Editor() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(src);
+        // Use proxy API to avoid CORS issues
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}`;
+        console.log("[Editor] Fetching image via proxy:", proxyUrl);
+
+        const res = await fetch(proxyUrl);
+        console.log("[Editor] Proxy response:", res.ok, res.status);
         if (!res.ok) return;
+
         const blob = await res.blob();
         if (cancelled) return;
+        console.log("[Editor] Got blob:", blob.type, blob.size);
+
         const ext = blob.type.includes("jpeg") ? "jpg" : blob.type.includes("webp") ? "webp" : "png";
         const f = new File([blob], `input.${ext}`, { type: blob.type || "image/png" });
+        console.log("[Editor] Created file:", f.name, f.size);
         setFile(f);
-      } catch {
-        // ignore
+      } catch (err) {
+        console.error("[Editor] Failed to load image:", err);
       }
     })();
 
@@ -74,11 +85,13 @@ export function Editor() {
 
   // Preview URL lifecycle
   useEffect(() => {
+    console.log("[Editor] Preview effect triggered, file:", file);
     if (!file) {
       setInputPreview(null);
       return;
     }
     const url = URL.createObjectURL(file);
+    console.log("[Editor] Created preview URL:", url);
     setInputPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
