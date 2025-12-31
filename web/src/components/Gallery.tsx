@@ -169,15 +169,9 @@ export function Gallery() {
                     setFlippedId(flippedId === image.name ? null : image.name);
                   }}
                 >
-                  {/* Glow border effect on hover */}
-                  <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10">
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-secondary to-primary blur-sm" />
-                    <div className="absolute inset-px rounded-lg bg-[var(--background)]" />
-                  </div>
-
                   {/* Front Face */}
                   <div
-                    className="absolute inset-0 backface-hidden rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--background)] group-hover:border-primary/50 transition-colors duration-300"
+                    className="absolute inset-0 backface-hidden rounded-lg overflow-hidden border-2 border-[var(--border-color)] bg-[var(--background)] group-hover:border-primary group-hover:shadow-[0_0_20px_rgba(0,255,157,0.3)] transition-all duration-300"
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
