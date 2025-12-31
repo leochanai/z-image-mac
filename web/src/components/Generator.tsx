@@ -89,6 +89,11 @@ export function Generator() {
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobPosition, setJobPosition] = useState<number | null>(null);
 
+  // Progress tracking
+  const [progress, setProgress] = useState(0);
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState(0);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Track the latest job ID to ensure the UI only updates for the most recent request
   const latestJobId = useRef<string | null>(null);
 
@@ -100,6 +105,32 @@ export function Generator() {
     setGeneratedImage(null);
     setJobStatus("queued");
     setShowSuccess(false);
+    setProgress(0);
+    setEstimatedTimeRemaining(120); // 2 minutes in seconds
+
+    // Clear any existing progress interval
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+
+    // Start progress simulation (120 seconds total)
+    const startTime = Date.now();
+    const totalDuration = 120000; // 120 seconds in milliseconds
+
+    progressIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progressPercent = Math.min((elapsed / totalDuration) * 100, 99);
+      const timeRemaining = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
+
+      setProgress(progressPercent);
+      setEstimatedTimeRemaining(timeRemaining);
+
+      // Stop at 99% and wait for actual completion
+      if (progressPercent >= 99) {
+        clearInterval(progressIntervalRef.current!);
+        progressIntervalRef.current = null;
+      }
+    }, 500); // Update every 500ms
 
     try {
       const seedToSend = config.seed === -1 ? Math.floor(Math.random() * 2147483647) : config.seed;
@@ -160,6 +191,13 @@ export function Generator() {
 
           if (statusData.status === "completed") {
             clearInterval(pollInterval);
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current);
+              progressIntervalRef.current = null;
+            }
+            setProgress(100);
+            setEstimatedTimeRemaining(0);
+
             if (statusData.result && statusData.result.url) {
               setGeneratedImage(`http://127.0.0.1:8000${statusData.result.url}`);
             }
@@ -167,8 +205,13 @@ export function Generator() {
             setJobStatus(null);
           } else if (statusData.status === "failed") {
             clearInterval(pollInterval);
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current);
+              progressIntervalRef.current = null;
+            }
             setIsGenerating(false);
             setJobStatus(null);
+            setProgress(0);
             alert(`Generation failed: ${statusData.error}`);
           }
         } catch (error) {
@@ -239,6 +282,15 @@ export function Generator() {
       });
     }
   }, [jobStatus, generatedImage]);
+
+  // Cleanup progress interval on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   // 判断是否有输出内容（包括正在生成）
   const hasOutput = generatedImage !== null || isGenerating;
@@ -700,7 +752,7 @@ export function Generator() {
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="text-center"
+                          className="text-center w-full px-8"
                         >
                           <div className="relative w-24 h-24 mx-auto mb-6">
                             <motion.div
@@ -720,12 +772,49 @@ export function Generator() {
                               <Zap className="w-8 h-8 text-primary animate-pulse" />
                             </div>
                           </div>
-                          <p className="font-mono text-sm tracking-widest text-primary">
+
+                          <p className="font-mono text-sm tracking-widest text-primary mb-6">
                             {jobStatus === "queued"
                               ? `QUEUED (POS: ${jobPosition})`
                               : t.generator.generating}
                           </p>
-                          <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.generatingHint}</p>
+
+                          {/* Progress Bar */}
+                          {jobStatus !== "queued" && (
+                            <div className="w-full max-w-md mx-auto space-y-3">
+                              {/* Progress bar track */}
+                              <div className="relative h-2 bg-[var(--background)] border border-[var(--border-color)] overflow-hidden">
+                                {/* Animated background */}
+                                <motion.div
+                                  className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+                                  animate={{ x: ["-100%", "200%"] }}
+                                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                />
+                                {/* Actual progress */}
+                                <motion.div
+                                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary-dim to-primary"
+                                  initial={{ width: "0%" }}
+                                  animate={{ width: `${progress}%` }}
+                                  transition={{ duration: 0.5, ease: "easeOut" }}
+                                >
+                                  {/* Glowing edge */}
+                                  <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
+                                </motion.div>
+                              </div>
+
+                              {/* Progress stats */}
+                              <div className="flex items-center justify-between font-mono text-xs">
+                                <span className="text-primary">{Math.round(progress)}%</span>
+                                <span className="text-[var(--foreground-muted)]">
+                                  {estimatedTimeRemaining > 0
+                                    ? `~${Math.floor(estimatedTimeRemaining / 60)}:${String(estimatedTimeRemaining % 60).padStart(2, '0')} 剩余`
+                                    : "即将完成..."}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <p className="font-mono text-xs text-[var(--foreground-muted)] mt-4">{t.generator.generatingHint}</p>
                         </motion.div>
                       ) : (
                         <div className="text-center p-8">
