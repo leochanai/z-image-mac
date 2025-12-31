@@ -360,181 +360,178 @@ export function Editor() {
             </div>
           </motion.div>
 
-          {/* BOTTOM: Control Panel */}
+          {/* BOTTOM: Control Panel - Side by Side Layout */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <div className="border-2 border-[var(--border-color)] bg-[var(--background)]/80">
-              {/* Corner decorations */}
-              <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* LEFT: Prompt Input */}
+              <div className={cn(
+                "relative border-2 transition-all duration-300",
+                jobStatus
+                  ? "border-primary animate-pulse-neon"
+                  : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
+              )}>
+                {/* Corner decorations */}
+                <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
+                <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-primary" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-primary" />
 
-              <div className="p-6">
-                {/* Prompt input */}
-                <div className="flex items-center gap-3 mb-4">
-                  <Wand2 className="w-5 h-5 text-primary" />
-                  <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.promptLabel}</span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-end">
-                  <div className="space-y-4">
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder={t.editor.promptPlaceholder}
-                      className="w-full h-[100px] bg-[var(--input-bg)] border border-[var(--border-color)] p-4 text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none focus:border-primary focus:outline-none transition-colors"
-                    />
-
-                    {/* Compact parameters row */}
-                    <div className="flex flex-wrap gap-4 items-center">
-                      <div className="flex items-center gap-2">
-                        <label className="font-mono text-xs text-[var(--foreground-muted)]">{t.editor.strengthLabel}:</label>
-                        <input
-                          type="number"
-                          min={0.05}
-                          max={1}
-                          step={0.05}
-                          value={strength}
-                          onChange={(e) => setStrength(parseFloat(e.target.value) || 0.6)}
-                          className="input-brutal w-20 text-sm"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <label className="font-mono text-xs text-[var(--foreground-muted)]">{t.editor.stepsLabel}:</label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={steps}
-                          onChange={(e) => setSteps(parseInt(e.target.value) || 9)}
-                          className="input-brutal w-20 text-sm"
-                        />
-                      </div>
-                      <button
-                        onClick={() => setShowSettings(!showSettings)}
-                        className="flex items-center gap-2 px-3 py-2 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all font-mono text-xs"
-                      >
-                        <Settings2 className="w-4 h-4 text-[var(--primary-dim)]" />
-                        {t.editor.moreOptions}
-                      </button>
-                    </div>
+                <div className="p-6 bg-[var(--background)]/80">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Wand2 className="w-5 h-5 text-primary" />
+                    <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.promptLabel}</span>
                   </div>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder={t.editor.promptPlaceholder}
+                    className="w-full h-[290px] bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
+                  />
 
-                  {/* Generate button */}
-                  <motion.button
-                    onClick={handleEdit}
-                    disabled={isSubmitting || !file || !prompt}
-                    className={cn(
-                      "relative overflow-hidden font-display text-sm tracking-widest px-8 py-4 transition-all duration-300 flex items-center gap-3 h-fit",
-                      isSubmitting || !file || !prompt
-                        ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
-                        : "bg-primary text-black hover:shadow-[0_0_30px_rgba(0,255,157,0.5)]"
-                    )}
-                    whileHover={!isSubmitting && file && prompt ? { scale: 1.02 } : {}}
-                    whileTap={!isSubmitting && file && prompt ? { scale: 0.95 } : {}}
-                  >
-                    {/* Scanning light effect */}
-                    {!isSubmitting && file && prompt && (
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                        initial={{ x: '-100%' }}
-                        animate={{ x: '200%' }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          repeatDelay: 3,
-                          ease: "easeInOut"
-                        }}
-                      />
-                    )}
-                    <AnimatePresence mode="wait">
-                      {isSubmitting ? (
-                        <motion.div
-                          key="submitting"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center gap-3"
-                        >
-                          <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                          <span>{t.editor.processing}</span>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="idle"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center gap-3"
-                        >
-                          <span>{t.editor.editBtn}</span>
-                          <Wand2 className="w-4 h-4" />
-                        </motion.div>
+                  <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
+                    <span className="font-mono text-xs text-[var(--foreground-muted)]">
+                      {prompt.length} {t.editor.promptHint}
+                    </span>
+                    <motion.button
+                      onClick={handleEdit}
+                      disabled={isSubmitting || !file || !prompt}
+                      className={cn(
+                        "relative overflow-hidden font-display text-sm tracking-widest px-6 py-3 transition-all duration-300 flex items-center gap-3",
+                        isSubmitting || !file || !prompt
+                          ? "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)] cursor-not-allowed"
+                          : "bg-primary text-black hover:shadow-[var(--glow-primary)]"
                       )}
-                    </AnimatePresence>
-                  </motion.button>
+                      whileHover={!isSubmitting && file && prompt ? { scale: 1.02 } : {}}
+                      whileTap={!isSubmitting && file && prompt ? { scale: 0.95 } : {}}
+                    >
+                      {/* Scanning light effect */}
+                      {!isSubmitting && file && prompt && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                          initial={{ x: '-100%' }}
+                          animate={{ x: '200%' }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            repeatDelay: 3,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      )}
+                      <AnimatePresence mode="wait">
+                        {isSubmitting ? (
+                          <motion.div
+                            key="submitting"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-3"
+                          >
+                            <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                            <span>{t.editor.processing}</span>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="idle"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-3"
+                          >
+                            <span>{t.editor.edit}</span>
+                            <Wand2 className="w-4 h-4" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  </div>
                 </div>
               </div>
 
-              {/* Expandable advanced settings */}
-              <AnimatePresence>
-                {showSettings && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden border-t border-[var(--border-color)]"
-                  >
-                    <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.negativeLabel}</label>
-                        <input
-                          type="text"
-                          value={negativePrompt}
-                          onChange={(e) => setNegativePrompt(e.target.value)}
-                          placeholder={t.editor.negativePlaceholder}
-                          className="input-brutal w-full text-sm mt-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.cfgLabel}</label>
+              {/* RIGHT: Advanced Parameters */}
+              <div className="border border-[var(--border-color)] bg-[var(--background)]/80 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Settings2 className="w-5 h-5 text-primary" />
+                  <span className="font-mono text-xs tracking-widest text-[var(--primary-dim)]">{t.editor.advancedParams}</span>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.negativeLabel}</label>
+                    <input
+                      type="text"
+                      value={negativePrompt}
+                      onChange={(e) => setNegativePrompt(e.target.value)}
+                      placeholder={t.editor.negativePlaceholder}
+                      className="input-brutal w-full text-sm mt-2"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.strengthLabel}</label>
+                      <input
+                        type="number"
+                        min={0.05}
+                        max={1}
+                        step={0.05}
+                        value={strength}
+                        onChange={(e) => setStrength(parseFloat(e.target.value) || 0.6)}
+                        className="input-brutal w-full text-sm mt-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.stepsLabel}</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={steps}
+                        onChange={(e) => setSteps(parseInt(e.target.value) || 9)}
+                        className="input-brutal w-full text-sm mt-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.cfgLabel}</label>
+                      <input
+                        type="number"
+                        step={0.1}
+                        value={guidance}
+                        onChange={(e) => setGuidance(parseFloat(e.target.value) || 0)}
+                        className="input-brutal w-full text-sm mt-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.seedLabel}</label>
+                      <div className="flex gap-2 mt-2">
                         <input
                           type="number"
-                          step={0.1}
-                          value={guidance}
-                          onChange={(e) => setGuidance(parseFloat(e.target.value) || 0)}
-                          className="input-brutal w-full text-sm mt-2"
+                          value={seed}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value);
+                            setSeed(Number.isNaN(v) ? -1 : v);
+                          }}
+                          className="input-brutal flex-1 text-sm"
                         />
-                      </div>
-                      <div>
-                        <label className="font-mono text-xs tracking-widest text-[var(--foreground-muted)]">{t.editor.seedLabel}</label>
-                        <div className="flex gap-2 mt-2">
-                          <input
-                            type="number"
-                            value={seed}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value);
-                              setSeed(Number.isNaN(v) ? -1 : v);
-                            }}
-                            className="input-brutal flex-1 text-sm"
-                          />
-                          <button
-                            onClick={() => setSeed(Math.floor(Math.random() * 1000000))}
-                            className="px-3 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
-                            title="Randomize seed"
-                          >
-                            <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => setSeed(Math.floor(Math.random() * 1000000))}
+                          className="px-4 border border-[var(--border-color)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
+                          title="Randomize seed"
+                        >
+                          <RefreshCw className="w-4 h-4 text-[var(--primary-dim)]" />
+                        </button>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+
+                  <p className="font-mono text-xs text-[var(--foreground-muted)] pt-2">{t.editor.strengthHint}</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
