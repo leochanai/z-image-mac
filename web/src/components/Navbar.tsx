@@ -14,7 +14,7 @@ export function Navbar() {
   const router = useRouter();
 
   const navItems = [
-    { key: "generate", label: t.nav.generate, href: "/#generator" },
+    { key: "generate", label: t.nav.generate, href: "/generate" },
     { key: "edit", label: t.nav.edit, href: "/edit" },
     { key: "gallery", label: t.nav.gallery, href: "/gallery" },
     { key: "docs", label: t.nav.docs, href: "/#" },
@@ -109,13 +109,7 @@ export function Navbar() {
 
           {/* Launch Button */}
           <button
-            onClick={() => {
-              if (pathname === "/") {
-                document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });
-              } else {
-                router.push("/#generator");
-              }
-            }}
+            onClick={() => router.push("/generate")}
             className="group flex items-center gap-2 px-6 py-4 bg-primary text-black font-display text-sm tracking-wider hover:bg-[var(--primary-dim)] transition-colors border-b-2 border-primary"
           >
             <Terminal className="w-4 h-4" />

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowDown, Cpu, Sparkles } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useRouter } from "next/navigation";
 
 // Deterministic pseudo-random (pure) so render stays idempotent.
 const rand01 = (seed: number) => {
@@ -78,6 +79,8 @@ const FloatingOrbs = () => (
 
 export function Hero() {
   const { t } = useLocale();
+
+  const router = useRouter();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -199,7 +202,7 @@ export function Hero() {
           {/* CTA Buttons - Brutalist style */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
             <button
-              onClick={() => document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => router.push("/generate")}
               className="group relative px-8 py-4 bg-primary text-black font-display text-sm tracking-widest overflow-hidden transition-all hover:pr-12"
             >
               <span className="relative z-10 flex items-center gap-3">
@@ -244,9 +247,6 @@ export function Hero() {
                   <span className="text-primary">{stat.value}</span>
                 </div>
               ))}
-            </div>
-            <div className="font-mono text-xs text-[var(--foreground-muted)]">
-              {t.hero.scrollHint} <span className="text-primary ml-2">↓</span>
             </div>
           </div>
         </div>
