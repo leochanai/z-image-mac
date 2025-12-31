@@ -18,6 +18,7 @@ export function Navbar() {
     { key: "generate", label: t.nav.generate, href: "/generate" },
     { key: "edit", label: t.nav.edit, href: "/edit" },
     { key: "gallery", label: t.nav.gallery, href: "/gallery" },
+    { key: "resource", label: t.nav.resource, href: "/resource" },
   ];
 
   return (
@@ -47,11 +48,7 @@ export function Navbar() {
         {/* Navigation Links - Horizontal bar */}
         <div className="hidden md:flex items-center border-b-2 border-[var(--border-color)] bg-[var(--background)]/80 backdrop-blur-sm">
           {navItems.map((item, i) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href === "/generate" && pathname === "/generate") ||
-              (item.href === "/edit" && pathname === "/edit") ||
-              (item.href === "/gallery" && pathname === "/gallery");
+            const isActive = pathname === item.href;
 
             return (
               <Link

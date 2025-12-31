@@ -5,6 +5,7 @@ export const locales = {
       generate: "生成",
       edit: "编辑",
       gallery: "画廊",
+      resource: "资源",
       docs: "文档",
       launch: "启动",
     },
@@ -117,6 +118,20 @@ export const locales = {
         flipBack: "翻转返回",
       },
     },
+    // Resource
+    resource: {
+      sectionLabel: "04 // 资源",
+      title: "有用",
+      titleHighlight: "资源",
+      description: "探索与 Z-Image 相关的有用链接、工具和文档",
+      categories: {
+        model: "模型与论文",
+        tools: "开发工具",
+        docs: "文档与教程",
+        community: "社区资源",
+      },
+      visitLink: "访问链接",
+    },
     // Theme
     theme: {
       light: "亮色",
@@ -134,6 +149,7 @@ export const locales = {
       generate: "GENERATE",
       edit: "EDIT",
       gallery: "GALLERY",
+      resource: "RESOURCES",
       docs: "DOCS",
       launch: "LAUNCH",
     },
@@ -245,6 +261,20 @@ export const locales = {
         seed: "Seed",
         flipBack: "Flip Back",
       },
+    },
+    // Resource
+    resource: {
+      sectionLabel: "04 // RESOURCES",
+      title: "USEFUL",
+      titleHighlight: "RESOURCES",
+      description: "Explore useful links, tools, and documentation related to Z-Image",
+      categories: {
+        model: "Model & Papers",
+        tools: "Dev Tools",
+        docs: "Docs & Tutorials",
+        community: "Community",
+      },
+      visitLink: "Visit Link",
     },
     // Theme
     theme: {
