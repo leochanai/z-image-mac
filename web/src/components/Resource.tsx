@@ -19,17 +19,11 @@ export function Resource() {
                     transition={{ duration: 0.6 }}
                     className="mb-12"
                 >
-                    <div className="font-mono text-xs text-primary tracking-wider mb-4">
-                        {t.resource.sectionLabel}
-                    </div>
-                    <h1 className="font-display text-6xl mb-4">
-                        <span className="text-[var(--foreground)]">{t.resource.title} </span>
-                        <span className="text-primary">{t.resource.titleHighlight}</span>
-                    </h1>
                     <p className="text-[var(--foreground-dim)] text-lg max-w-2xl">
                         {t.resource.description}
                     </p>
                 </motion.div>
+
 
                 {/* Resource Grid */}
                 <div className="space-y-12">
