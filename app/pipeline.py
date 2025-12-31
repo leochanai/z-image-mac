@@ -118,13 +118,23 @@ def get_edit_pipeline():
     if _PIPELINE_EDIT is not None:
         return _PIPELINE_EDIT
 
+    # Qwen Image Edit 在 MPS 上用 bfloat16 往往更省内存/更快；
+    # 生成（Z-Image-Turbo）仍保持 CONFIG.torch_dtype 的保守策略。
+    dtype = torch.bfloat16 if CONFIG.device == "mps" else CONFIG.torch_dtype
+
     pipe = cls.from_pretrained(
         model_id,
         low_cpu_mem_usage=True,
-        torch_dtype=CONFIG.torch_dtype,
+        torch_dtype=dtype,
     )
 
     pipe = pipe.to(CONFIG.device)
+
+    # Ensure tqdm progress is visible in server logs.
+    try:
+        pipe.set_progress_bar_config(disable=None)
+    except Exception:
+        pass
 
     _PIPELINE_EDIT = pipe
     return _PIPELINE_EDIT

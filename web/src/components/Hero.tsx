@@ -4,51 +4,75 @@ import { motion } from "framer-motion";
 import { ArrowDown, Cpu, Sparkles } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 
+// Deterministic pseudo-random (pure) so render stays idempotent.
+const rand01 = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
 // Floating light orbs for atmospheric effect
 const FloatingOrbs = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    {[...Array(15)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute w-1 h-1 bg-primary rounded-full"
-        style={{
-          left: `${10 + Math.random() * 80}%`,
-          top: `${10 + Math.random() * 80}%`,
-        }}
-        animate={{
-          y: [0, -20 - Math.random() * 20, 0],
-          opacity: [0.2, 0.7, 0.2],
-          scale: [1, 1.5 + Math.random(), 1],
-        }}
-        transition={{
-          duration: 3 + Math.random() * 4,
-          repeat: Infinity,
-          delay: Math.random() * 3,
-          ease: "easeInOut",
-        }}
-      />
-    ))}
+    {[...Array(15)].map((_, i) => {
+      const left = 10 + rand01(i * 11.11) * 80;
+      const top = 10 + rand01(i * 22.22) * 80;
+      const yAmp = 20 + rand01(i * 33.33) * 20;
+      const scaleAmp = 1.5 + rand01(i * 44.44);
+      const duration = 3 + rand01(i * 55.55) * 4;
+      const delay = rand01(i * 66.66) * 3;
+
+      return (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-primary rounded-full"
+          style={{
+            left: `${left}%`,
+            top: `${top}%`,
+          }}
+          animate={{
+            y: [0, -yAmp, 0],
+            opacity: [0.2, 0.7, 0.2],
+            scale: [1, scaleAmp, 1],
+          }}
+          transition={{
+            duration,
+            repeat: Infinity,
+            delay,
+            ease: "easeInOut",
+          }}
+        />
+      );
+    })}
+
     {/* Blue accent orbs */}
-    {[...Array(8)].map((_, i) => (
-      <motion.div
-        key={`blue-${i}`}
-        className="absolute w-0.5 h-0.5 bg-secondary rounded-full"
-        style={{
-          left: `${20 + Math.random() * 60}%`,
-          top: `${20 + Math.random() * 60}%`,
-        }}
-        animate={{
-          y: [0, -15 - Math.random() * 15, 0],
-          opacity: [0.1, 0.5, 0.1],
-        }}
-        transition={{
-          duration: 4 + Math.random() * 3,
-          repeat: Infinity,
-          delay: Math.random() * 2,
-          ease: "easeInOut",
-        }}
-      />
-    ))}
+    {[...Array(8)].map((_, i) => {
+      const left = 20 + rand01(100 + i * 11.11) * 60;
+      const top = 20 + rand01(200 + i * 22.22) * 60;
+      const yAmp = 15 + rand01(300 + i * 33.33) * 15;
+      const duration = 4 + rand01(400 + i * 44.44) * 3;
+      const delay = rand01(500 + i * 55.55) * 2;
+
+      return (
+        <motion.div
+          key={`blue-${i}`}
+          className="absolute w-0.5 h-0.5 bg-secondary rounded-full"
+          style={{
+            left: `${left}%`,
+            top: `${top}%`,
+          }}
+          animate={{
+            y: [0, -yAmp, 0],
+            opacity: [0.1, 0.5, 0.1],
+          }}
+          transition={{
+            duration,
+            repeat: Infinity,
+            delay,
+            ease: "easeInOut",
+          }}
+        />
+      );
+    })}
   </div>
 );
 

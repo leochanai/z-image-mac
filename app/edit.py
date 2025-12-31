@@ -86,7 +86,8 @@ def edit_image(
     print(
         "Editing with: "
         f"prompt='{prompt}', neg='{neg}', w={w}, h={h}, steps={steps}, "
-        f"scale={scale}, strength={strength}, seed={seed}, input='{input_path}'"
+        f"scale={scale}, strength={strength}, seed={seed}, input='{input_path}'",
+        flush=True,
     )
 
     # Build kwargs dynamically for compatibility across pipelines.

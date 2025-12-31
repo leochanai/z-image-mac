@@ -93,7 +93,7 @@ current_job_id: Optional[str] = None
 
 def worker():
     global current_job_id
-    print("Worker thread started")
+    print("Worker thread started", flush=True)
     while True:
         try:
             job_id, job_type, req = job_queue.get()
@@ -105,7 +105,7 @@ def worker():
                 job_results[job_id].position = 0
                 job_results[job_id].job_type = job_type
 
-            print(f"Processing job {job_id} ({job_type}): {req.prompt}")
+            print(f"Processing job {job_id} ({job_type}): {req.prompt}", flush=True)
 
             try:
                 if job_type == "generate":
@@ -151,7 +151,7 @@ def worker():
                         "job_type": job_type,
                     }
             except Exception as e:
-                print(f"Error processing job {job_id}: {e}")
+                print(f"Error processing job {job_id}: {e}", flush=True)
                 traceback.print_exc()
                 if job_id in job_results:
                     job_results[job_id].status = "failed"
@@ -161,7 +161,7 @@ def worker():
             job_queue.task_done()
 
         except Exception as e:
-            print(f"Worker error: {e}")
+            print(f"Worker error: {e}", flush=True)
             time.sleep(1)
 
 # Start worker thread
