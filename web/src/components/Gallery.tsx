@@ -118,7 +118,7 @@ export function Gallery() {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="h-[2px] w-12 bg-primary" />
-            <span className="font-mono text-xs tracking-widest text-primary">02 // {t.nav.gallery}</span>
+            <span className="font-mono text-xs tracking-widest text-primary">03 // {t.nav.gallery}</span>
           </div>
           <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[var(--foreground)]">
             {t.gallery.title} <span className="neon-text">{t.gallery.titleHighlight}</span>

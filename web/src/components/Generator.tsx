@@ -240,6 +240,9 @@ export function Generator() {
     }
   }, [jobStatus, generatedImage]);
 
+  // 判断是否有输出内容（包括正在生成）
+  const hasOutput = generatedImage !== null || isGenerating;
+
   return (
     <section id="generator" className="min-h-screen py-20 px-6 md:px-12 relative bg-[var(--background)]">
       {/* Background */}
@@ -264,183 +267,36 @@ export function Generator() {
           </h2>
         </motion.div>
 
-        {/* Main Layout: Image-First Design - Preview Left (60%), Controls Right (40%) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[6fr_4fr] gap-6">
+        {/* Dynamic Layout: Changes based on hasOutput state */}
+        <div className={cn(
+          "relative transition-all duration-500",
+          hasOutput
+            ? "grid grid-cols-[2fr_3fr] gap-6"
+            : "flex items-center justify-center"
+        )}>
 
-          {/* LEFT: Image Preview Area (Primary Focus - 60%) */}
-          <div className="flex flex-col gap-3">
-            {/* Preview Panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex-1"
-            >
-              <div className={cn(
-                "relative h-[600px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
-                isGenerating
-                  ? "border-primary animate-pulse-neon"
-                  : generatedImage
-                    ? "border-[var(--primary-dim)]"
-                    : "border-[var(--border-color)]"
-              )}>
-                {/* Corner decorations */}
-                <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
-                <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
-                <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
-                <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
-
-                {/* Scanlines overlay */}
-                <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
-
-                {generatedImage ? (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative w-full h-full group"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={generatedImage}
-                      alt="Generated"
-                      className="w-full h-full object-contain bg-black/50"
-                    />
-                    {/* Hover overlay with actions */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                      <a
-                        href={generatedImage}
-                        download
-                        className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
-                        title="Download"
-                      >
-                        <Download className="w-6 h-6 text-primary" />
-                      </a>
-                      <a
-                        href={generatedImage}
-                        target="_blank"
-                        className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
-                        title="Open in new tab"
-                      >
-                        <Maximize2 className="w-6 h-6 text-primary" />
-                      </a>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    {isGenerating ? (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center"
-                      >
-                        <div className="relative w-24 h-24 mx-auto mb-6">
-                          <motion.div
-                            className="absolute inset-0 border-2 border-primary rounded-lg"
-                            animate={{
-                              scale: [1, 1.2, 1],
-                              opacity: [0.5, 0, 0.5]
-                            }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          />
-                          <motion.div
-                            className="absolute inset-2 border border-primary-dim rounded-md"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          />
-                          <div className="absolute inset-4 flex items-center justify-center bg-primary/10 rounded">
-                            <Zap className="w-8 h-8 text-primary animate-pulse" />
-                          </div>
-                        </div>
-                        <p className="font-mono text-sm tracking-widest text-primary">
-                          {jobStatus === "queued"
-                            ? `QUEUED (POS: ${jobPosition})`
-                            : t.generator.generating}
-                        </p>
-                        <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.generatingHint}</p>
-                      </motion.div>
-                    ) : (
-                      <div className="text-center p-8">
-                        <motion.div
-                          className="w-24 h-24 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center"
-                          animate={{ opacity: [0.5, 1, 0.5] }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                        >
-                          <ImageIcon className="w-10 h-10 text-[var(--primary-muted)]" />
-                        </motion.div>
-                        <p className="font-mono text-sm tracking-widest text-[var(--foreground-dim)]">{t.generator.outputPreview}</p>
-                        <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.outputHint}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Status bar at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-[var(--background)]/90 border-t border-[var(--border-color)] backdrop-blur-sm">
-                  <div className="flex items-center justify-between font-mono text-xs">
-                    <span className="text-[var(--foreground-muted)]">
-                      {config.width}×{config.height} • {config.steps} steps
-                    </span>
-                    <span className={cn(
-                      "flex items-center gap-2",
-                      isGenerating ? "text-primary" : generatedImage ? "text-[var(--primary-dim)]" : "text-[var(--foreground-muted)]"
-                    )}>
-                      <span className={cn(
-                        "w-2 h-2 rounded-full",
-                        isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-[var(--foreground-muted)]"
-                      )} />
-                      {isGenerating
-                        ? (jobStatus === "queued" ? `QUEUED #${jobPosition}` : t.generator.statusProcessing)
-                        : generatedImage ? t.generator.statusComplete : t.generator.statusIdle}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* History thumbnails - Horizontal at bottom */}
-            <AnimatePresence>
-              {history.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="flex gap-2 p-3 border border-[var(--border-color)] bg-[var(--background)]/50 overflow-x-auto custom-scrollbar">
-                    {history.map((item, i) => (
-                      <div
-                        key={i}
-                        className="w-16 h-16 flex-shrink-0 rounded overflow-hidden border border-[var(--border-color)] hover:border-primary transition-colors cursor-pointer group relative"
-                        onClick={() => setGeneratedImage(item.url)}
-                        title={item.prompt}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.url} alt="Thumbnail" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* RIGHT: Control Panel (40%) */}
+          {/* LEFT: Controls Panel - Full screen when no output, 40% when has output */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="space-y-4"
+            layout
+            initial={false}
+            transition={{
+              layout: { duration: 0.6, ease: [0.32, 0.72, 0, 1] }
+            }}
+            className={cn(
+              "space-y-4 w-full",
+              !hasOutput && "max-w-6xl"
+            )}
           >
             {/* Main Prompt Input */}
-            <div className={cn(
-              "relative border-2 transition-all duration-300",
-              isGenerating
-                ? "border-primary animate-pulse-neon"
-                : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
-            )}>
+            <motion.div
+              layout
+              className={cn(
+                "relative border-2 transition-all duration-300",
+                isGenerating
+                  ? "border-primary animate-pulse-neon"
+                  : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
+              )}
+            >
               {/* Corner decorations */}
               <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-primary" />
               <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-primary" />
@@ -456,7 +312,10 @@ export function Generator() {
                   value={config.prompt}
                   onChange={(e) => updateConfig("prompt", e.target.value)}
                   placeholder={t.generator.promptPlaceholder}
-                  className="w-full h-[228px] bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none"
+                  className={cn(
+                    "w-full bg-transparent border-none outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] font-mono text-sm leading-relaxed resize-none transition-all duration-500",
+                    hasOutput ? "h-[180px]" : "h-[320px]"
+                  )}
                   onKeyDown={(e) => e.key === "Enter" && e.metaKey && handleGenerate()}
                 />
 
@@ -591,10 +450,10 @@ export function Generator() {
                   </motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Advanced Settings */}
-            <div className="border border-[var(--border-color)] bg-[var(--background)]/50">
+            <motion.div layout className="border border-[var(--border-color)] bg-[var(--background)]/50">
               <button
                 onClick={() => {
                   if (showSettings) setOverflowVisible(false);
@@ -767,8 +626,174 @@ export function Generator() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           </motion.div>
+
+          {/* RIGHT: Output Preview - Only show when hasOutput is true */}
+          <AnimatePresence mode="wait">
+            {hasOutput && (
+              <motion.div
+                key="output-panel"
+                initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 50, scale: 0.95 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.32, 0.72, 0, 1],
+                  opacity: { duration: 0.3 }
+                }}
+                className="flex flex-col gap-3"
+              >
+                {/* Preview Panel */}
+                <div className={cn(
+                  "relative h-[600px] w-full border-2 bg-[var(--background)]/80 overflow-hidden transition-all duration-500",
+                  isGenerating
+                    ? "border-primary animate-pulse-neon"
+                    : generatedImage
+                      ? "border-[var(--primary-dim)]"
+                      : "border-[var(--border-color)]"
+                )}>
+                  {/* Corner decorations */}
+                  <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                  <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-[var(--primary-muted)] z-10" />
+                  <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-[var(--primary-muted)] z-10" />
+                  <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-[var(--primary-muted)] z-10" />
+
+                  {/* Scanlines overlay */}
+                  <div className="absolute inset-0 pointer-events-none opacity-20 scanlines" />
+
+                  {generatedImage ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="relative w-full h-full group"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={generatedImage}
+                        alt="Generated"
+                        className="w-full h-full object-contain bg-black/50"
+                      />
+                      {/* Hover overlay with actions */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                        <a
+                          href={generatedImage}
+                          download
+                          className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
+                          title="Download"
+                        >
+                          <Download className="w-6 h-6 text-primary" />
+                        </a>
+                        <a
+                          href={generatedImage}
+                          target="_blank"
+                          className="p-4 border-2 border-[var(--primary-dim)] hover:border-primary hover:bg-[var(--primary-subtle)] transition-all"
+                          title="Open in new tab"
+                        >
+                          <Maximize2 className="w-6 h-6 text-primary" />
+                        </a>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      {isGenerating ? (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-center"
+                        >
+                          <div className="relative w-24 h-24 mx-auto mb-6">
+                            <motion.div
+                              className="absolute inset-0 border-2 border-primary rounded-lg"
+                              animate={{
+                                scale: [1, 1.2, 1],
+                                opacity: [0.5, 0, 0.5]
+                              }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            />
+                            <motion.div
+                              className="absolute inset-2 border border-primary-dim rounded-md"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            />
+                            <div className="absolute inset-4 flex items-center justify-center bg-primary/10 rounded">
+                              <Zap className="w-8 h-8 text-primary animate-pulse" />
+                            </div>
+                          </div>
+                          <p className="font-mono text-sm tracking-widest text-primary">
+                            {jobStatus === "queued"
+                              ? `QUEUED (POS: ${jobPosition})`
+                              : t.generator.generating}
+                          </p>
+                          <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.generatingHint}</p>
+                        </motion.div>
+                      ) : (
+                        <div className="text-center p-8">
+                          <motion.div
+                            className="w-24 h-24 mx-auto mb-6 border-2 border-dashed border-[var(--border-color)] flex items-center justify-center"
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                          >
+                            <ImageIcon className="w-10 h-10 text-[var(--primary-muted)]" />
+                          </motion.div>
+                          <p className="font-mono text-sm tracking-widest text-[var(--foreground-dim)]">{t.generator.outputPreview}</p>
+                          <p className="font-mono text-xs text-[var(--foreground-muted)] mt-2">{t.generator.outputHint}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Status bar at bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-[var(--background)]/90 border-t border-[var(--border-color)] backdrop-blur-sm">
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="text-[var(--foreground-muted)]">
+                        {config.width}×{config.height} • {config.steps} steps
+                      </span>
+                      <span className={cn(
+                        "flex items-center gap-2",
+                        isGenerating ? "text-primary" : generatedImage ? "text-[var(--primary-dim)]" : "text-[var(--foreground-muted)]"
+                      )}>
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          isGenerating ? "bg-primary animate-pulse" : generatedImage ? "bg-primary" : "bg-[var(--foreground-muted)]"
+                        )} />
+                        {isGenerating
+                          ? (jobStatus === "queued" ? `QUEUED #${jobPosition}` : t.generator.statusProcessing)
+                          : generatedImage ? t.generator.statusComplete : t.generator.statusIdle}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* History thumbnails - Horizontal at bottom */}
+                <AnimatePresence>
+                  {history.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="flex gap-2 p-3 border border-[var(--border-color)] bg-[var(--background)]/50 overflow-x-auto custom-scrollbar">
+                        {history.map((item, i) => (
+                          <div
+                            key={i}
+                            className="w-16 h-16 flex-shrink-0 rounded overflow-hidden border border-[var(--border-color)] hover:border-primary transition-colors cursor-pointer group relative"
+                            onClick={() => setGeneratedImage(item.url)}
+                            title={item.prompt}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.url} alt="Thumbnail" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

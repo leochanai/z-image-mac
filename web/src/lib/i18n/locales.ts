@@ -27,7 +27,7 @@ export const locales = {
     generator: {
       sectionLabel: "01 // 生成",
       title: "图片",
-      titleHighlight: "合成",
+      titleHighlight: "生成",
       promptLabel: "提示词输入",
       promptPlaceholder: "描述你的想象...",
       promptHint: "字符 • ⌘+Enter 生成",
@@ -58,7 +58,7 @@ export const locales = {
     },
     // Editor
     editor: {
-      sectionLabel: "01 // 编辑",
+      sectionLabel: "02 // 编辑",
       title: "图片",
       titleHighlight: "修改",
       inputImage: "输入图片",
@@ -156,7 +156,7 @@ export const locales = {
     generator: {
       sectionLabel: "01 // GENERATE",
       title: "IMAGE",
-      titleHighlight: "SYNTHESIS",
+      titleHighlight: "GENERATE",
       promptLabel: "PROMPT INPUT",
       promptPlaceholder: "Describe your vision...",
       promptHint: "chars • ⌘+Enter to generate",
@@ -187,7 +187,7 @@ export const locales = {
     },
     // Editor
     editor: {
-      sectionLabel: "01 // EDIT",
+      sectionLabel: "02 // EDIT",
       title: "IMAGE",
       titleHighlight: "EDIT",
       inputImage: "INPUT IMAGE",
