@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Zap, Github, Terminal, Sun, Moon, Languages } from "lucide-react";
+import { Zap, Github, Sun, Moon, Languages } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const { locale, setLocale, t } = useLocale();
@@ -17,7 +18,6 @@ export function Navbar() {
     { key: "generate", label: t.nav.generate, href: "/generate" },
     { key: "edit", label: t.nav.edit, href: "/edit" },
     { key: "gallery", label: t.nav.gallery, href: "/gallery" },
-    { key: "docs", label: t.nav.docs, href: "/#" },
   ];
 
   return (
@@ -46,26 +46,55 @@ export function Navbar() {
 
         {/* Navigation Links - Horizontal bar */}
         <div className="hidden md:flex items-center border-b-2 border-[var(--border-color)] bg-[var(--background)]/80 backdrop-blur-sm">
-          {navItems.map((item, i) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              className="relative px-6 py-4 font-mono text-xs tracking-widest text-[var(--foreground-dim)] hover:text-primary transition-colors duration-300 group overflow-hidden"
-            >
-              <span className="relative z-10 flex items-center gap-1">
-                <span className="text-primary/50 group-hover:text-primary transition-colors duration-300">{String(i + 1).padStart(2, '0')}</span>
-                <span className="group-hover:translate-x-0.5 transition-transform duration-300">{item.label}</span>
-              </span>
-              <div className="absolute inset-0 bg-primary/0 group-hover:bg-[var(--primary-subtle)] transition-colors duration-300" />
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary origin-left"
-                initial={{ scaleX: 0 }}
-                whileHover={{ scaleX: 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              />
-              <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </Link>
-          ))}
+          {navItems.map((item, i) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href === "/generate" && pathname === "/generate") ||
+              (item.href === "/edit" && pathname === "/edit") ||
+              (item.href === "/gallery" && pathname === "/gallery");
+
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={cn(
+                  "relative px-6 py-4 font-mono text-xs tracking-widest transition-colors duration-300 group overflow-hidden",
+                  isActive
+                    ? "text-primary bg-[var(--primary-subtle)]"
+                    : "text-[var(--foreground-dim)] hover:text-primary"
+                )}
+              >
+                <span className="relative z-10 flex items-center gap-1">
+                  <span
+                    className={cn(
+                      "transition-colors duration-300",
+                      isActive ? "text-primary" : "text-primary/50 group-hover:text-primary"
+                    )}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="group-hover:translate-x-0.5 transition-transform duration-300">
+                    {item.label}
+                  </span>
+                </span>
+                <div
+                  className={cn(
+                    "absolute inset-0 transition-colors duration-300",
+                    isActive
+                      ? "bg-[var(--primary-subtle)]"
+                      : "bg-primary/0 group-hover:bg-[var(--primary-subtle)]"
+                  )}
+                />
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary origin-left"
+                  initial={{ scaleX: isActive ? 1 : 0 }}
+                  animate={{ scaleX: isActive ? 1 : 0 }}
+                  whileHover={{ scaleX: 1 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                />
+              </Link>
+            );
+          })}
         </div>
 
         {/* Spacer */}
@@ -107,14 +136,7 @@ export function Navbar() {
             <Github className="w-5 h-5 text-[var(--foreground-dim)] hover:text-primary transition-colors" />
           </Link>
 
-          {/* Launch Button */}
-          <button
-            onClick={() => router.push("/generate")}
-            className="group flex items-center gap-2 px-6 py-4 bg-primary text-black font-display text-sm tracking-wider hover:bg-[var(--primary-dim)] transition-colors border-b-2 border-primary"
-          >
-            <Terminal className="w-4 h-4" />
-            <span>{t.nav.launch}</span>
-          </button>
+
         </div>
       </div>
 

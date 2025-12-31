@@ -197,21 +197,7 @@ export function Editor() {
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
 
       <div className="container max-w-[1600px] mx-auto relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-[2px] w-12 bg-primary" />
-            <span className="font-mono text-xs tracking-widest text-primary">{t.editor.sectionLabel}</span>
-          </div>
-          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[var(--foreground)]">
-            {t.editor.title} <span className="neon-text">{t.editor.titleHighlight}</span>
-          </h2>
-        </motion.div>
+
 
         {/* New Layout: Image-First Design */}
         <div className="space-y-6">

@@ -303,21 +303,7 @@ export function Generator() {
 
       <div className="container max-w-[1600px] mx-auto relative z-10">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-[2px] w-12 bg-primary" />
-            <span className="font-mono text-xs tracking-widest text-primary">{t.generator.sectionLabel}</span>
-          </div>
-          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[var(--foreground)]">
-            {t.generator.title} <span className="neon-text">{t.generator.titleHighlight}</span>
-          </h2>
-        </motion.div>
+
 
         {/* Dynamic Layout: Changes based on hasOutput state */}
         <div className={cn(

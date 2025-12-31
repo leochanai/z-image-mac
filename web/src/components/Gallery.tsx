@@ -85,8 +85,8 @@ export function Gallery() {
     if (meta.scale) params.set("guidance", String(meta.scale));
     if (meta.seed) params.set("seed", String(meta.seed));
 
-    // Force full page load so Generator reads params from scratch
-    window.location.href = `/?${params.toString()}`;
+    // Use router.push to prevent full page reload
+    router.push(`/generate?${params.toString()}`);
   };
 
   const editFromGallery = (asset: Asset, e: React.MouseEvent) => {
@@ -110,20 +110,7 @@ export function Gallery() {
 
       <div className="container max-w-7xl mx-auto relative z-10">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-[2px] w-12 bg-primary" />
-            <span className="font-mono text-xs tracking-widest text-primary">03 // {t.nav.gallery}</span>
-          </div>
-          <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[var(--foreground)]">
-            {t.gallery.title} <span className="neon-text">{t.gallery.titleHighlight}</span>
-          </h2>
-        </motion.div>
+
 
         {/* Queue Section */}
 
