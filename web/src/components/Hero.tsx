@@ -102,11 +102,7 @@ export function Hero() {
     },
   };
 
-  const stats = [
-    { label: t.hero.statResolution, value: "1024×1024" },
-    { label: t.hero.statInference, value: "~3s" },
-    { label: t.hero.statModel, value: "TURBO" },
-  ];
+
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[var(--background)]">
@@ -158,49 +154,37 @@ export function Hero() {
         />
       </div>
 
-      {/* Main Content - Asymmetric layout */}
+      {/* Main Content - Centered layout */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="container relative z-10 px-6 md:px-12 pt-24"
+        className="w-full relative z-10 px-6 md:px-12 pt-24 flex flex-col items-center justify-center text-center"
       >
-        <div className="max-w-5xl">
-          {/* Status Badge */}
-          <motion.div variants={itemVariants} className="mb-8">
-            <div className="inline-flex items-center gap-3 px-4 py-2 border border-[var(--border-color)] bg-[var(--background)]/50">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-2 w-2 bg-primary" />
-              </span>
-              <span className="font-mono text-xs tracking-widest text-primary/80">
-                {t.hero.status}
-              </span>
-            </div>
-          </motion.div>
+        <div className="max-w-5xl flex flex-col items-center">
 
-          {/* Main Title - Brutalist Typography */}
+
+          {/* Main Title - Centered */}
           <motion.h1 variants={itemVariants} className="mb-6">
             <span className="block font-display text-[clamp(3rem,12vw,10rem)] leading-[0.85] tracking-tight text-[var(--foreground)]">
               {t.hero.title1}
             </span>
-            <span className="block font-display text-[clamp(3rem,12vw,10rem)] leading-[0.85] tracking-tight">
+            <span className="block font-display text-[clamp(3rem,12vw,10rem)] leading-[0.85] tracking-tight mt-6">
               <span className="neon-text">{t.hero.title2Highlight}</span>
               <span className="text-[var(--foreground)] ml-4">{t.hero.title2}</span>
             </span>
           </motion.h1>
 
-          {/* Subtext with vertical line accent */}
-          <motion.div variants={itemVariants} className="flex items-start gap-6 mb-12 max-w-xl">
-            <div className="w-[2px] h-24 bg-gradient-to-b from-primary to-transparent flex-shrink-0 mt-1" />
-            <p className="font-mono text-sm md:text-base text-[var(--foreground-dim)] leading-relaxed">
-              {t.hero.description}{" "}
-              <span className="text-primary">{t.hero.descriptionHighlight}</span>
+          {/* Subtext - Centered layout */}
+          <motion.div variants={itemVariants} className="flex flex-col items-center gap-4 mb-12 max-w-2xl px-4">
+            <div className="w-12 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent mb-2" />
+            <p className="font-mono text-sm md:text-base text-[var(--foreground-dim)] leading-relaxed text-center">
+              {t.hero.description}
             </p>
+            <span className="font-mono text-sm md:text-base text-primary text-center">{t.hero.descriptionHighlight}</span>
           </motion.div>
-
-          {/* CTA Buttons - Brutalist style */}
-          <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
+          {/* CTA Buttons - Brutalist style Centered */}
+          <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => router.push("/generate")}
               className="group relative px-8 py-4 bg-primary text-black font-display text-sm tracking-widest overflow-hidden transition-all hover:pr-12"
@@ -217,38 +201,12 @@ export function Hero() {
                 <ArrowDown className="w-4 h-4 rotate-[-90deg]" />
               </motion.div>
             </button>
-
-            <button className="group px-8 py-4 border-2 border-[var(--foreground-muted)] hover:border-[var(--primary-dim)] font-display text-sm tracking-widest text-[var(--foreground-dim)] hover:text-[var(--foreground)] transition-all flex items-center gap-3">
-              <Cpu className="w-5 h-5 text-[var(--primary-dim)] group-hover:text-primary transition-colors" />
-              {t.hero.ctaSpecs}
-            </button>
           </motion.div>
         </div>
 
         {/* Decorative corner elements */}
         <div className="absolute top-24 right-12 hidden lg:block">
           <div className="w-32 h-32 border-t-2 border-r-2 border-[var(--border-color)]" />
-        </div>
-      </motion.div>
-
-      {/* Bottom Stats Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        className="absolute bottom-0 left-0 right-0 border-t border-[var(--border-color)] bg-[var(--background)]/80 backdrop-blur-sm"
-      >
-        <div className="container px-6 md:px-12 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-8">
-              {stats.map((stat) => (
-                <div key={stat.label} className="font-mono text-xs">
-                  <span className="text-[var(--foreground-muted)] mr-2">{stat.label}</span>
-                  <span className="text-primary">{stat.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </motion.div>
 
